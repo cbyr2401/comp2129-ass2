@@ -1,7 +1,7 @@
 /**
  * comp2129 - assignment 2
- * <your name>
- * <your unikey>
+ * Cian Byrne
+ * cbyr2401
  */
 
 #include <stdio.h>
@@ -32,6 +32,8 @@ snapshot* snapshot_tail = NULL;
 // ...
 //
 
+
+
 void command_bye () {
     printf("bye\n");
 }
@@ -39,6 +41,18 @@ void command_bye () {
 void command_help() {
     printf("%s\n", HELP);
 }
+
+
+int (*ptrc_bye)();
+int (*ptrc_help)();
+
+ptrc_bye = &command_bye;
+ptrc_help = &command_help;
+
+int* COMMAND_FUNC[] = {
+	ptrc_bye, ptrc_help,
+	
+};
 
 int main(void) {
 
@@ -57,6 +71,15 @@ int main(void) {
     	    command_bye();
     	    return 0; 		
     	}
+		else{
+			char cmd_input[9]; // longest command is 9
+			int nargs;
+			// check for LIST commands:
+			nargs = sscanf(line, " %s", cmd_input);
+			if(nargs){
+			}
+		}
+			
     	
 	    //
 	    // TODO

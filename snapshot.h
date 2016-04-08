@@ -61,4 +61,15 @@ const char* HELP =
 	"INTER <key> <key ...>  displays set intersection of values in keys\n"
 	"UNION <key> <key ...>  displays set union of values in keys\n";
 
+const char* COMMAND_LIST[] = {
+	"BYE", "HELP",
+	"GET", "DEL", "PURGE",
+	"SET", "PUSH", "APPEND",
+	"PICK", "PLUCK", "POP",
+	"DROP", "ROLLBACK", "CHECKOUT", "SNAPSHOT",
+	"MIN", "MAX", "SUM", "LEN",
+	"REV", "UNIQ", "SORT", 
+	"DIFF", "INTER", "UNION",
+	"LIST KEYS", "LIST ENTRIES", "LIST SNAPSHOTS"
+};
 #endif
