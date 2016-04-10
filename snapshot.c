@@ -47,6 +47,114 @@ void (*ptrcommand[28])() = {
 	command_listKeys, command_listEntries, command_listSnapshots
 };
 
+void list_init(entry* head){
+	
+}
+
+int list_size(entry* head){
+	if(list_empty(head)){
+		return 0;
+	}else{
+		entry* current = head;
+		int size = 0;
+		while(current != NULL){
+			current = head.next;
+			size++;
+		}
+		return size;
+	}
+}
+
+int list_empty(entry* head){
+	return head==NULL;
+}
+
+void list_keys(entry * head){
+	if(list_empty(head)){
+		// no keys:
+		printf("no keys\n");
+	}else{
+		entry* current = head;
+		int size = 0;
+		while(current != NULL){
+			printf("%s\n", current.key);
+			current = head.next;
+		}
+		return size;
+	}
+}
+
+void list_entries(entry* head){
+	if(list_empty(head)){
+		// no entries:
+		printf("no entries\n");
+	}else{
+		entry* current = head;
+		int size = 0;
+		while(current != NULL){
+			// TODO:  check if I can just print the int array without going through it.
+			printf("%s [", current.key);
+			for(int i = 0; i < sizeof(current.values)/sizeof(int); i++){
+				printf("%d", current.values[i]);
+			}
+			printf("]\n");
+			current = head.next;
+		}
+		return size;
+	}
+}
+
+void list_snapshots(snapshot* head){
+	if(list_empty(head)){
+		// no snapshots:
+		printf("no snapshots\n");
+	}else{
+		entry* current = head;
+		int size = 0;
+		while(current != NULL){
+			printf("%d\n", current.key);
+			current = head.next;
+		}
+		return size;
+	}
+}
+
+void list_appendE(entry* head, char* ke, int* va){
+	if(list_empty(head)){
+		// no elements:
+		entry new = malloc(sizeof(entry));
+		new->key = strncpy(key);
+		new->values = create_values(va);
+		new.prev = NULL;
+		new.next = NULL;
+		entry_head = &new;
+	}else{
+		// some elements
+		// TODO: implement with entry tail...
+		//entry* last = entry_tail;
+		int pos = 0;
+		while(current.next != NULL){
+			current = current.next
+		}
+		entry new = malloc(sizeof(entry));
+		new->key = strncpy(key);
+		new.prev = current;
+		new.next = NULL;
+	}
+}
+
+void list_deleteE(entry* head, char* ke){
+	
+}
+
+// source: http://stackoverflow.com/questions/8287109/how-to-copy-one-integer-array-to-another
+void int* create_values(int const * arr){
+	size_t length = sizeof(arr)/sizeof(int);
+	int * ptr = malloc(length * sizeof(int));
+	memcpy(ptr, arr, length * sizeof(int));
+	return ptr;
+}
+
 int main(void) {
 
 	char line[MAX_LINE];
