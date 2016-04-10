@@ -72,4 +72,47 @@ const char* COMMAND_LIST[] = {
 	"DIFF", "INTER", "UNION",
 	"LIST KEYS", "LIST ENTRIES", "LIST SNAPSHOTS"
 };
+
+/*
+	Function Declarations
+	 * Each of these will call a sub-function... these allow for
+	    fast searching of commands.
+*/
+void command_bye(void);
+void command_help(void);
+
+void command_listKeys(void);
+void command_listEntries(void);
+void command_listSnapshots(void);
+
+void command_get(void);
+void command_del(void);
+void command_purge(void);
+
+void command_set(void);
+void command_push(void);
+void command_append(void);
+
+void command_pick(void);
+void command_pluck(void);
+void command_pop(void);
+
+void command_drop(void);
+void command_rollback(void);
+void command_checkout(void);
+void command_snapshot(void);
+
+void command_min(void);
+void command_max(void);
+void command_sum(void);
+void command_len(void);
+
+void command_rev(void);
+void command_uniq(void);
+void command_sort(void);
+
+void command_diff(void);
+void command_inter(void);
+void command_union(void);
+
 #endif
