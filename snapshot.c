@@ -47,99 +47,121 @@ void (*ptrcommand[28])() = {
 	command_listKeys, command_listEntries, command_listSnapshots
 };
 
-void list_init(entry* head){
-	
+// from solutions from week 5 tutorial
+// void list_init(entry* head){
+	// head->next = head;
+	// head->prev = head;
+// }
+
+// void list_push(node* head, node* n) {
+	// n->prev = head;
+	// n->next = head->next;
+
+	// n->next->prev = n;
+	// n->prev->next = n;
+// }
+// // end week 5
+
+
+int entry_empty(entry* head){
+	return head==NULL;
+}
+
+int snapshot_empty(snapshot* head){
+	return head==NULL;
+}
+
+// source: http://stackoverflow.com/questions/8287109/how-to-copy-one-integer-array-to-another
+int* create_values(int const * arr){
+	size_t length = sizeof(arr)/sizeof(int);
+	int * ptr = malloc(length * sizeof(int));
+	memcpy(ptr, arr, length * sizeof(int));
+	return ptr;
 }
 
 int list_size(entry* head){
-	if(list_empty(head)){
+	if(entry_empty(head)){
 		return 0;
 	}else{
 		entry* current = head;
 		int size = 0;
 		while(current != NULL){
-			current = head.next;
+			current = head->next;
 			size++;
 		}
 		return size;
 	}
 }
 
-int list_empty(entry* head){
-	return head==NULL;
-}
-
 void list_keys(entry * head){
-	if(list_empty(head)){
+	if(entry_empty(head)){
 		// no keys:
 		printf("no keys\n");
 	}else{
 		entry* current = head;
-		int size = 0;
 		while(current != NULL){
-			printf("%s\n", current.key);
-			current = head.next;
+			printf("%s\n", current->key);
+			current = head->next;
 		}
-		return size;
 	}
 }
 
 void list_entries(entry* head){
-	if(list_empty(head)){
+	if(entry_empty(head)){
 		// no entries:
 		printf("no entries\n");
 	}else{
 		entry* current = head;
-		int size = 0;
 		while(current != NULL){
 			// TODO:  check if I can just print the int array without going through it.
-			printf("%s [", current.key);
-			for(int i = 0; i < sizeof(current.values)/sizeof(int); i++){
-				printf("%d", current.values[i]);
+			printf("%s [", current->key);
+			for(int i = 0; i < sizeof(current->values)/sizeof(int); i++){
+				printf("%d", current->values[i]);
 			}
 			printf("]\n");
-			current = head.next;
+			current = head->next;
 		}
-		return size;
 	}
 }
 
 void list_snapshots(snapshot* head){
-	if(list_empty(head)){
+	if(snapshot_empty(head)){
 		// no snapshots:
 		printf("no snapshots\n");
 	}else{
-		entry* current = head;
-		int size = 0;
+		snapshot* current = head;
 		while(current != NULL){
-			printf("%d\n", current.key);
-			current = head.next;
+			printf("%d\n", current->id);
+			current = head->next;
 		}
-		return size;
 	}
 }
 
-void list_appendE(entry* head, char* ke, int* va){
-	if(list_empty(head)){
+void list_appendE(entry* head, char* key, int* values){
+	if(entry_empty(head)){
 		// no elements:
-		entry new = malloc(sizeof(entry));
-		new->key = strncpy(key);
-		new->values = create_values(va);
-		new.prev = NULL;
-		new.next = NULL;
-		entry_head = &new;
+		entry* new = malloc(sizeof(entry));
+		strncpy(new->key,key,sizeof(key)/sizeof(char));
+		new->length = sizeof(values)/sizeof(int);
+		new->values = create_values(values);
+		new->prev = NULL;
+		new->next = NULL;
+		entry_head = new;
 	}else{
 		// some elements
 		// TODO: implement with entry tail...
 		//entry* last = entry_tail;
-		int pos = 0;
-		while(current.next != NULL){
-			current = current.next
+
+		entry* current = head;
+		while(current->next != NULL){
+			current = current->next;
 		}
-		entry new = malloc(sizeof(entry));
-		new->key = strncpy(key);
-		new.prev = current;
-		new.next = NULL;
+		entry* new = malloc(sizeof(entry));
+		strncpy(new->key,key,sizeof(key)/sizeof(char));
+		new->length = sizeof(values)/sizeof(int);
+		new->values = create_values(values);
+		new->prev = current;
+		new->next = NULL;
 	}
 }
 
@@ -147,13 +169,7 @@ void list_deleteE(entry* head, char* ke){
 	
 }
 
-// source: http://stackoverflow.com/questions/8287109/how-to-copy-one-integer-array-to-another
-void int* create_values(int const * arr){
-	size_t length = sizeof(arr)/sizeof(int);
-	int * ptr = malloc(length * sizeof(int));
-	memcpy(ptr, arr, length * sizeof(int));
-	return ptr;
-}
+
 
 int main(void) {
 
