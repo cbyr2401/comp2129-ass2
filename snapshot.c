@@ -64,11 +64,11 @@ void (*ptrcommand[28])() = {
 
 
 int entry_empty(entry* head){
-	return head==NULL;
+	return (head==NULL);
 }
 
 int snapshot_empty(snapshot* head){
-	return head==NULL;
+	return (head==NULL);
 }
 
 // source: http://stackoverflow.com/questions/8287109/how-to-copy-one-integer-array-to-another
@@ -80,7 +80,7 @@ int* create_values(int const * arr){
 }
 
 int list_size(entry* head){
-	if(entry_empty(head)){
+	if(head==NULL){
 		return 0;
 	}else{
 		entry* current = head;
@@ -94,7 +94,7 @@ int list_size(entry* head){
 }
 
 void list_keys(entry * head){
-	if(entry_empty(head)){
+	if(head==NULL){
 		// no keys:
 		printf("no keys\n");
 	}else{
@@ -107,7 +107,7 @@ void list_keys(entry * head){
 }
 
 void list_entries(entry* head){
-	if(entry_empty(head)){
+	if(head==NULL){
 		// no entries:
 		printf("no entries\n");
 	}else{
@@ -125,7 +125,7 @@ void list_entries(entry* head){
 }
 
 void list_snapshots(snapshot* head){
-	if(snapshot_empty(head)){
+	if(head==NULL){
 		// no snapshots:
 		printf("no snapshots\n");
 	}else{
@@ -138,7 +138,7 @@ void list_snapshots(snapshot* head){
 }
 
 void list_appendE(entry* head, char* key, int* values){
-	if(entry_empty(head)){
+	if(head==NULL){
 		// no elements:
 		entry* new = malloc(sizeof(entry));
 		strncpy(new->key,key,sizeof(key)/sizeof(char));
@@ -189,23 +189,46 @@ int main(void) {
     	    return 0; 		
     	}
 		else{
-			char cmd[9]; // longest command is 9
+			char * argv[MAX_COMMAND];
+			char *word;
+			const char delim[2] = " ";
+			//char cmd[9]; // longest command is 9
 			int nargs;
 			// check for LIST commands:
 
-			nargs = sscanf(line, " %s", cmd);
-
+			//nargs = sscanf(line, " %s", cmd);
+			
+			nargs = 0;
+			argv[nargs] = strtok(line, delim);
+			
+			// sourced from: https://gist.github.com/efeciftci/9120921
+			while((word = strtok(NULL, delim)) != NULL){
+				nargs++;
+				argv[nargs] = word;
+			}
+			
 			if(nargs < 1){
 				
 			}
-			// convert all characters to uppercase for search...
-			for(int c=0; c < strlen(cmd); c++) cmd[c] = toupper(cmd[c]);
+			
+			// convert all characters for command to uppercase for search...
+			for(int c=0; c < strlen(argv[0]); c++) argv[0][c] = toupper(argv[0][c]);
+			
+			// check for "LIST"
+			if(strcmp(argv[0], "LIST")==0){
+				// convert second word to upper case:
+				for(int c=0; c < strlen(argv[1]); c++) argv[1][c] = toupper(argv[1][c]);
+				// concat the two words together:
+				//strcat(strcat(argv[0], delim), argv[1]);
+				argv[0][strlen(argv[0])] = ' ';  // replaces '\0' with ' ', bit dangerous.
+			}
+			// TODO: strcat returning that there is more in argv[0] than there should be.
+			printf("%d", strcmp(argv[0], "LIST SNAPSHOTS"));
 			
 			// look for a matching command and then run it.
-			for(int i = 0; i < 25; i++){
-				if(strcmp(cmd,COMMAND_LIST[i])==0) (*ptrcommand[i])();
-			}
-			
+			for(int i = 0; i < 28; i++){
+				if(strcmp(argv[0],COMMAND_LIST[i])==0) (*ptrcommand[i])();
+			}			
 		}
 			
     	
@@ -310,8 +333,8 @@ void command_listKeys(){
 	
 };
 void command_listEntries(){
-	
+	list_entries(entry_head);
 };
 void command_listSnapshots(){
-	
+	list_snapshots(snapshot_head);
 };
