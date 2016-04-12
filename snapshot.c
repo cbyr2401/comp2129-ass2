@@ -79,96 +79,60 @@ int* create_values(int const * arr){
 	return ptr;
 }
 
-int list_size(entry* head){
-	if(head==NULL){
-		return 0;
-	}else{
-		entry* current = head;
-		int size = 0;
-		while(current != NULL){
-			current = head->next;
-			size++;
-		}
-		return size;
-	}
-}
-
-void list_keys(entry * head){
-	if(head==NULL){
-		// no keys:
-		printf("no keys\n");
-	}else{
-		entry* current = head;
-		while(current != NULL){
-			printf("%s\n", current->key);
-			current = head->next;
-		}
-	}
-}
-
-void list_entries(entry* head){
-	if(head==NULL){
-		// no entries:
-		printf("no entries\n");
-	}else{
-		entry* current = head;
-		while(current != NULL){
-			// TODO:  check if I can just print the int array without going through it.
-			printf("%s [", current->key);
-			for(int i = 0; i < sizeof(current->values)/sizeof(int); i++){
-				printf("%d", current->values[i]);
-			}
-			printf("]\n");
-			current = head->next;
-		}
-	}
-}
-
-void list_snapshots(snapshot* head){
-	if(head==NULL){
-		// no snapshots:
-		printf("no snapshots\n");
-	}else{
-		snapshot* current = head;
-		while(current != NULL){
-			printf("%d\n", current->id);
-			current = head->next;
-		}
-	}
-}
-
-void list_appendE(entry* head, char* key, int* values){
-	if(head==NULL){
-		// no elements:
-		entry* new = malloc(sizeof(entry));
-		strncpy(new->key,key,sizeof(key)/sizeof(char));
-		new->length = sizeof(values)/sizeof(int);
-		new->values = create_values(values);
-		new->prev = NULL;
-		new->next = NULL;
-		entry_head = new;
-	}else{
-		// some elements
-		// TODO: implement with entry tail...
-		//entry* last = entry_tail;
-
-		entry* current = head;
-		while(current->next != NULL){
-			current = current->next;
-		}
-		entry* new = malloc(sizeof(entry));
-		strncpy(new->key,key,sizeof(key)/sizeof(char));
-		new->length = sizeof(values)/sizeof(int);
-		new->values = create_values(values);
-		new->prev = current;
-		new->next = NULL;
-	}
-}
-
-void list_deleteE(entry* head, char* ke){
+// entry* entry_create(char* argv){
+	// // entry* n = (entry *) malloc(sizeof(entry));
+	// // char key = argv[1];
+	// // int* list = malloc((sizeof(argv)/sizeof(argv[0])-2) * sizeof(int));
+	// // for(int i = 0; i < (sizeof(argv)/sizeof(argv[0])-2); i++){
+		// // values[i] = argv[i+2];
+	// // }
 	
+// }
+
+void entry_add(entry* head, entry* n){
+	entry* current = head;
+	if(current == NULL){
+		// first element in list.
+		entry_head = n;
+	}
+	// search the list until the end:
+	while(current->next != NULL){
+		current = head->next;
+	}
+	// create link
+	current->next = n;
+	n->prev = current;	
 }
 
+void entry_remove(entry* n){
+	if(n->prev == NULL){
+		// firt element in list
+		entry_head = NULL;
+		// remove n
+		free(n->values);
+		free(n);
+	}else{
+		// rebuild link, with n removed.
+		n->next->prev = n->prev;
+		n->prev->next = n->next;
+		// remove n
+		free(n->values);
+		free(n);
+	}
+}
+
+void entry_list(entry* head){
+	if(head == NULL){
+		// the list is empty
+		printf("no entries");
+	}else{
+		entry* current = head;
+		while(current != NULL){
+			// list all the keys...
+			printf(current->key);
+		}
+	}
+}
 
 
 int main(void) {
@@ -177,12 +141,6 @@ int main(void) {
 
 	while (true) {
     	printf("> ");
-		// get input from user and check it is valid
-		//input = fgets(buffer, 12, stdin);
-		// check for null
-		//if(input=='\0') CleanExitError();
-		// parse
-		//nargs = sscanf(input, " %s %c", &cmd, &x, &y, extra);
 
     	if (fgets(line, MAX_LINE, stdin) == NULL) {
     	    //(*ptrc[0])();
@@ -192,13 +150,8 @@ int main(void) {
 			char * argv[MAX_COMMAND];
 			char *word;
 			const char delim[2] = " ";
-			//char cmd[9]; // longest command is 9
-			int nargs;
+			int nargs = 0;
 			// check for LIST commands:
-
-			//nargs = sscanf(line, " %s", cmd);
-			
-			nargs = 0;
 			// strip newline character:
 			strtok(line, "\n");
 
@@ -226,11 +179,12 @@ int main(void) {
 				//strcat(strcat(argv[0], delim), argv[1]);
 				argv[0][strlen(argv[0])] = ' ';  // replaces '\0' with ' ', bit dangerous.
 			}
-
+			
 			// look for a matching command and then run it.
+			// TODO: put in strcasecmp
 			for(int i = 0; i < 28; i++){
 				if(strcmp(argv[0],COMMAND_LIST[i])==0) (*ptrcommand[i])();
-			}			
+			}		
 		}
 			
     	
@@ -335,8 +289,8 @@ void command_listKeys(){
 	
 };
 void command_listEntries(){
-	list_entries(entry_head);
+	
 };
 void command_listSnapshots(){
-	list_snapshots(snapshot_head);
+	
 };
