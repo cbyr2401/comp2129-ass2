@@ -19,6 +19,8 @@ entry* entry_tail = NULL;
 snapshot* snapshot_head = NULL;
 snapshot* snapshot_tail = NULL;
 
+char * argv[MAX_COMMAND];
+
 //
 // We recommend that you design your program to be
 // modular where each function performs a small task
@@ -79,15 +81,30 @@ int* create_values(int const * arr){
 	return ptr;
 }
 
-// entry* entry_create(char* argv){
-	// // entry* n = (entry *) malloc(sizeof(entry));
-	// // char key = argv[1];
-	// // int* list = malloc((sizeof(argv)/sizeof(argv[0])-2) * sizeof(int));
-	// // for(int i = 0; i < (sizeof(argv)/sizeof(argv[0])-2); i++){
-		// // values[i] = argv[i+2];
-	// // }
+int arrlen(const char* arr){
+	return (sizeof(argv)/sizeof(argv[0]));
+}
+
+// function to clean argv global 
+void clean_argv(void){
+	for(int i = 0; i < arrlen(*argv); i++) argv[i] = 0;
+}
+
+entry* entry_create(char* argv){
+	entry* n = (entry *) malloc(sizeof(entry));
+	int* list = malloc(arrlen(argv)-2 * sizeof(int));
+
+	for(int i = 0; i < (arrlen(argv)-2); i++){
+		list[i] = (int)argv[i+2];
+	}
 	
-// }
+	// set elements in new entry:
+	n->key = argv[1];  //TODO: fix this!!!!!!!!!!!!!!!!!!!!!!
+	n->values = list;
+	
+	// return pointer to new entry
+	return n;
+}
 
 void entry_add(entry* head, entry* n){
 	entry* current = head;
@@ -147,17 +164,21 @@ int main(void) {
     	    return 0; 		
     	}
 		else{
-			char * argv[MAX_COMMAND];
+			// TAG: moved argv[] to global scope
 			char *word;
 			const char delim[2] = " ";
 			int nargs = 0;
-			// check for LIST commands:
+			// clear the arguments array.
+			clean_argv();
+			
 			// strip newline character:
 			strtok(line, "\n");
-
+			
+			// get first argument
 			argv[nargs] = strtok(line, delim);
 			
 			// sourced from: https://gist.github.com/efeciftci/9120921
+			// get all other arguements:
 			while((word = strtok(NULL, delim)) != NULL){
 				nargs++;
 				argv[nargs] = word;
@@ -184,7 +205,8 @@ int main(void) {
 			// TODO: put in strcasecmp
 			for(int i = 0; i < 28; i++){
 				if(strcmp(argv[0],COMMAND_LIST[i])==0) (*ptrcommand[i])();
-			}		
+			}	
+			
 		}
 			
     	
