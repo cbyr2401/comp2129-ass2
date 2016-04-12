@@ -222,8 +222,13 @@ int main(void) {
 				//strcat(strcat(argv[0], delim), argv[1]);
 				argv[0][strlen(argv[0])] = ' ';  // replaces '\0' with ' ', bit dangerous.
 			}
+			printf("%s\n", argv[0]);
 			// TODO: strcat returning that there is more in argv[0] than there should be.
-			printf("%d", strcmp(argv[0], "LIST SNAPSHOTS"));
+			printf("%d\n", strcmp(argv[0], "LIST SNAPSHOTS"));
+			
+			printf("\n");
+			for( int c = 0; c < strlen(argv[0]); c++) printf("%u|", argv[0][c]);
+			printf("\n");
 			
 			// look for a matching command and then run it.
 			for(int i = 0; i < 28; i++){
