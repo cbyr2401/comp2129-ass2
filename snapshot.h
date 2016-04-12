@@ -7,6 +7,12 @@
 
 typedef struct entry entry;
 typedef struct snapshot snapshot;
+// typedef struct node node;
+
+// struct node {
+	// void * data; 
+	// node * next; 
+// };
 
 struct entry {
 	char key[MAX_KEY];

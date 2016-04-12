@@ -199,6 +199,9 @@ int main(void) {
 			//nargs = sscanf(line, " %s", cmd);
 			
 			nargs = 0;
+			// strip newline character:
+			strtok(line, "\n");
+
 			argv[nargs] = strtok(line, delim);
 			
 			// sourced from: https://gist.github.com/efeciftci/9120921
@@ -210,26 +213,20 @@ int main(void) {
 			if(nargs < 1){
 				
 			}
-			
+			// TODO: remove this and put in strcasecmp
 			// convert all characters for command to uppercase for search...
 			for(int c=0; c < strlen(argv[0]); c++) argv[0][c] = toupper(argv[0][c]);
 			
 			// check for "LIST"
 			if(strcmp(argv[0], "LIST")==0){
+				// TODO: remove this and put in strcasecmp
 				// convert second word to upper case:
 				for(int c=0; c < strlen(argv[1]); c++) argv[1][c] = toupper(argv[1][c]);
 				// concat the two words together:
 				//strcat(strcat(argv[0], delim), argv[1]);
 				argv[0][strlen(argv[0])] = ' ';  // replaces '\0' with ' ', bit dangerous.
 			}
-			printf("%s\n", argv[0]);
-			// TODO: strcat returning that there is more in argv[0] than there should be.
-			printf("%d\n", strcmp(argv[0], "LIST SNAPSHOTS"));
-			
-			printf("\n");
-			for( int c = 0; c < strlen(argv[0]); c++) printf("%u|", argv[0][c]);
-			printf("\n");
-			
+
 			// look for a matching command and then run it.
 			for(int i = 0; i < 28; i++){
 				if(strcmp(argv[0],COMMAND_LIST[i])==0) (*ptrcommand[i])();
