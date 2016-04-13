@@ -13,13 +13,16 @@
 
 #include "snapshot.h"
 
+#define ARRLEN(x)  (sizeof(x) / sizeof((x)[0]))
+
+
 entry* entry_head = NULL;
 entry* entry_tail = NULL;
 
 snapshot* snapshot_head = NULL;
 snapshot* snapshot_tail = NULL;
 
-char ** argv;
+char * argv[MAX_COMMAND]; // = malloc(MAX_COMMAND * sizeof(char));
 
 //
 // We recommend that you design your program to be
@@ -87,14 +90,14 @@ int arrlen(const char** arr){
 
 // function to clean argv global 
 void clean_argv(void){
-	for(int i = 0; i < arrlen(argv); i++) argv[i] = NULL;
+	for(int i = 0; i < ARRLEN(argv); i++) argv[i] = NULL;
 }
 
 entry* entry_create(const char **argv){
 	entry* n = (entry *) malloc(sizeof(entry));
-	int* list = malloc(arrlen(argv)-2 * sizeof(int));
+	int* list = malloc(ARRLEN(argv)-2 * sizeof(int));
 
-	for(int i = 0; i < (arrlen(argv)-2); i++){
+	for(int i = 0; argv[i+2] != NULL; i++){
 		list[i] = (int)argv[i+2];
 	}
 	
