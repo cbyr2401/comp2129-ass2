@@ -19,7 +19,7 @@ entry* entry_tail = NULL;
 snapshot* snapshot_head = NULL;
 snapshot* snapshot_tail = NULL;
 
-char * argv[MAX_COMMAND];
+char ** argv;
 
 //
 // We recommend that you design your program to be
@@ -81,16 +81,16 @@ int* create_values(int const * arr){
 	return ptr;
 }
 
-int arrlen(const char* arr){
-	return (sizeof(argv)/sizeof(argv[0]));
+int arrlen(const char** arr){
+	return (sizeof(arr)/sizeof(arr[0]));
 }
 
 // function to clean argv global 
 void clean_argv(void){
-	for(int i = 0; i < arrlen(*argv); i++) argv[i] = 0;
+	for(int i = 0; i < arrlen(argv); i++) argv[i] = NULL;
 }
 
-entry* entry_create(char* argv){
+entry* entry_create(const char **argv){
 	entry* n = (entry *) malloc(sizeof(entry));
 	int* list = malloc(arrlen(argv)-2 * sizeof(int));
 
@@ -99,7 +99,7 @@ entry* entry_create(char* argv){
 	}
 	
 	// set elements in new entry:
-	n->key = argv[1];  //TODO: fix this!!!!!!!!!!!!!!!!!!!!!!
+	strcpy(n->key,argv[1]);  //TODO: fix this!!!!!!!!!!!!!!!!!!!!!!
 	n->values = list;
 	
 	// return pointer to new entry
