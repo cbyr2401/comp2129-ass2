@@ -327,7 +327,6 @@ void command_purge(){
 void command_set(){
 	// check entry exists
 	entry* n = entry_find(entry_head, argv[1]);
-	printf("line 275: entry not found. %p\n", n);
 	if(entry_head == NULL || n == NULL){
 		// create new entry and append to list
 		n = entry_create();
