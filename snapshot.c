@@ -266,10 +266,28 @@ void command_help() {
 }
 
 void command_get(){
-	
+	entry* n = entry_find(entry_head, argv[1]);
+	if(n == NULL){
+		printf("no such key\n");
+	}else{
+		printf("[");
+		for(int i = 0; i < n->length; i++){
+			if(i==n->length-1){
+				printf("%d", n->values[i]);
+			} else{
+				printf("%d ", n->values[i]);
+			}
+		}
+		printf("]\n");
+	}
 };
 void command_del(){
-	
+	entry* n = entry_find(entry_head, argv[1]);
+	if(n == NULL){
+		printf("no such key\n");
+	}else{
+		entry_remove(n);
+	}
 };
 void command_purge(){
 	
