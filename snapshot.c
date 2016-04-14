@@ -76,52 +76,97 @@ int snapshot_empty(snapshot* head){
 	return (head==NULL);
 }
 
-// source: http://stackoverflow.com/questions/8287109/how-to-copy-one-integer-array-to-another
-int* create_values(int const * arr){
-	size_t length = sizeof(arr)/sizeof(int);
-	int * ptr = malloc(length * sizeof(int));
-	memcpy(ptr, arr, length * sizeof(int));
-	return ptr;
-}
-
-int arrlen(const char** arr){
-	return (sizeof(arr)/sizeof(arr[0]));
-}
-
 // function to clean argv global 
 void clean_argv(void){
 	for(int i = 0; i < ARRLEN(argv); i++) argv[i] = NULL;
 }
 
-entry* entry_create(const char **argv){
+entry* entry_create(){
 	entry* n = (entry *) malloc(sizeof(entry));
-	int* list = malloc(ARRLEN(argv)-2 * sizeof(int));
-
-	for(int i = 0; argv[i+2] != NULL; i++){
-		list[i] = (int)argv[i+2];
+	int length = 0;
+	
+	// building list for entry:	
+	int* list = (int *)malloc(length * sizeof(int));
+	if(argv[2] == NULL){
+		// empty list
+	}else if(argv[3] == NULL){
+		// one item in list
+		list[0] = atoi(argv[2]);
+		length = 1;
+	}else{
+		// multiple items:
+		length = 0;
+		for(; argv[length+2] != NULL; length++){
+			realloc(list, length+1);
+			sscanf(argv[length+2], "%d", &list[length]);
+		}
 	}
 	
-	// set elements in new entry:
-	strcpy(n->key,argv[1]);  //TODO: fix this!!!!!!!!!!!!!!!!!!!!!!
-	n->values = list;
+	// check key length:
+	if(strlen(argv[1])>MAX_KEY){
+		// some defined error action would normally occur here,
+		//  but that is outside scope of assessment.
+	}
 	
-	// return pointer to new entry
+	// load up the entry with values:
+	strcpy(n->key, argv[1]);
+	n->values = list;
+	n->length = length;
+	
+	// this function is finished...
 	return n;
 }
 
-void entry_add(entry* head, entry* n){
+void entry_update(entry* n){
+	int length = 0;
+	int* list = (int *)malloc(length * sizeof(int));
+	free(n->values);
+	
+	for(; argv[length+2] != NULL; length++){
+			realloc(list, length+1);
+			sscanf(argv[length+2], "%d", &list[length]);
+	}
+	// update length:
+	n->length = length;
+	n->values = list;
+}
+
+void entry_append(entry* head, entry* n){
 	entry* current = head;
 	if(current == NULL){
 		// first element in list.
 		entry_head = n;
-	}
+		entry_tail = n;
+		n->next = NULL;
+		n->prev = NULL;
+	}else{
+		// search the list until the end:
+		//while(current->next != NULL){
+			//current = current->next;
+		//}
+		// for rapid fire adding of elements:
+		current = entry_tail;
+		
+		// create link
+		current->next = n;
+		n->prev = current;
+		n->next = NULL;
+		// for rapid fire adding of elements:
+		entry_tail = n;
+	}	
+}
+
+// searches given linked list for a key and then 
+//  returns the address or NULL.
+entry* entry_find(entry* head, char* key){
 	// search the list until the end:
-	while(current->next != NULL){
-		current = head->next;
+	entry* current = head;
+	if(head == NULL) return NULL;
+	while(current->next != NULL && strcmp(current->key, key) != 0 ){
+		current = current->next;
 	}
-	// create link
-	current->next = n;
-	n->prev = current;	
+	if(strcmp(current->key, key) == 0) return current;
+	else return NULL;
 }
 
 void entry_remove(entry* n){
@@ -138,19 +183,6 @@ void entry_remove(entry* n){
 		// remove n
 		free(n->values);
 		free(n);
-	}
-}
-
-void entry_list(entry* head){
-	if(head == NULL){
-		// the list is empty
-		printf("no entries");
-	}else{
-		entry* current = head;
-		while(current != NULL){
-			// list all the keys...
-			printf(current->key);
-		}
 	}
 }
 
@@ -200,15 +232,14 @@ int main(void) {
 				// convert second word to upper case:
 				for(int c=0; c < strlen(argv[1]); c++) argv[1][c] = toupper(argv[1][c]);
 				// concat the two words together:
-				//strcat(strcat(argv[0], delim), argv[1]);
-				argv[0][strlen(argv[0])] = ' ';  // replaces '\0' with ' ', bit dangerous.
+				sprintf(argv[0], "%s %s", argv[0], argv[1]);
 			}
-			
+
 			// look for a matching command and then run it.
 			// TODO: put in strcasecmp
 			for(int i = 0; i < 28; i++){
 				if(strcmp(argv[0],COMMAND_LIST[i])==0) (*ptrcommand[i])();
-			}	
+			}
 			
 		}
 			
@@ -245,7 +276,18 @@ void command_purge(){
 };
 
 void command_set(){
-	
+	// check entry exists
+	entry* n = entry_find(entry_head, argv[1]);
+	printf("line 275: entry not found. %p\n", n);
+	if(entry_head == NULL || n == NULL){
+		// create new entry and append to list
+		n = entry_create();
+		entry_append(entry_head, n);
+	}else{
+		// set values in existing entry
+		entry_update(n);
+	}	
+	// operation completed.
 };
 void command_push(){
 	
@@ -311,11 +353,47 @@ void command_union(){
 };
 
 void command_listKeys(){
-	
+	if(entry_head == NULL){
+		// the list is empty
+		printf("no keys\n");
+	}else{
+		entry* current = entry_head;
+		while(current != NULL){
+			// list all the keys...
+			printf("%s\n", current->key);
+			current = current->next;
+		}
+	}
 };
 void command_listEntries(){
-	
+	if(entry_head==NULL){
+		// no entries:
+		printf("no entries\n");
+	}else{
+		entry* current = entry_head;
+		while(current != NULL){
+			printf("%s [", current->key);
+			for(int i = 0; i < current->length; i++){
+				if(i==current->length-1){
+					printf("%d", current->values[i]);
+				} else{
+					printf("%d ", current->values[i]);
+				}
+			}
+			printf("]\n");
+			current = current->next;
+		}
+	}
 };
 void command_listSnapshots(){
-	
+	if(snapshot_head==NULL){
+		// no snapshots:
+		printf("no snapshots\n");
+	}else{
+		snapshot* current = snapshot_head;
+		while(current != NULL){
+			printf("%d\n", current->id);
+			current = current->next;
+		}
+	}
 };
