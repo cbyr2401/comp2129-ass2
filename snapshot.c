@@ -170,19 +170,48 @@ entry* entry_find(entry* head, char* key){
 }
 
 void entry_remove(entry* n){
-	if(n->prev == NULL){
-		// firt element in list
+	if(n->prev == NULL && n->next == NULL){
+		// only element in list
 		entry_head = NULL;
-		// remove n
+		// free memory of values, then the struct
+		free(n->values);
+		free(n);
+	}else if(n->prev == NULL && n->next != NULL){
+		// we are dealing with the first element:
+		entry_head = n->next;
+		n->next->prev = NULL;
+		// free memory of values, then the struct
+		free(n->values);
+		free(n);
+	}else if(n->next == NULL && n->prev != NULL){
+		// we are dealing with the last element:
+		entry_tail = n->prev;
+		n->prev->next = NULL;
+		// free memory of values, then the struct
 		free(n->values);
 		free(n);
 	}else{
 		// rebuild link, with n removed.
 		n->next->prev = n->prev;
 		n->prev->next = n->next;
-		// remove n
+		// free memory of values, then the struct
 		free(n->values);
 		free(n);
+	}
+}
+
+void entry_removeAll(entry* head){
+	entry* current = head;
+	entry* next = NULL;
+	if(head == NULL){
+		// nothing to clean up :)
+	}else{
+		// free all memory from each individual entry:
+		while(current != NULL){
+			next = current->next;
+			entry_remove(current);
+			current = next;
+		}
 	}
 }
 
@@ -257,6 +286,8 @@ void command_bye () {
 	// clean up all memory
 	// printf
 	// exit
+	entry_removeAll(entry_head);
+	// snapshot clean all... bit harder.
     printf("bye\n");
 	exit(0);
 }
