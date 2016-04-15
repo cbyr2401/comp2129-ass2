@@ -52,44 +52,18 @@ void (*ptrcommand[28])() = {
 	command_listKeys, command_listEntries, command_listSnapshots
 };
 
-// from solutions from week 5 tutorial
-// void list_init(entry* head){
-	// head->next = head;
-	// head->prev = head;
-// }
-
-// void list_push(node* head, node* n) {
-	// n->prev = head;
-	// n->next = head->next;
-
-	// n->next->prev = n;
-	// n->prev->next = n;
-// }
-// // end week 5
-
-
-int entry_empty(entry* head){
-	return (head==NULL);
-}
-
-int snapshot_empty(snapshot* head){
-	return (head==NULL);
-}
-
 // function to clean argv global 
 void clean_argv(void){
 	for(int i = 0; i < ARRLEN(argv); i++) argv[i] = NULL;
 }
 
 entry* entry_create(){
-	printf("line 85: creating entry\n");
 	entry* n = (entry *) malloc(sizeof(entry));
-	printf("line 87: initialize length... %p\n", n);
 	int length = 0;
 	
 	// building list for entry:	
-	printf("line 90: creating list\n");
 	int* list = (int *)malloc(1 * sizeof(int));
+	
 	if(argv[2] == NULL){
 		// empty list
 	}else if(argv[3] == NULL){
@@ -99,14 +73,13 @@ entry* entry_create(){
 	}else{
 		// multiple items:
 		length = 0;
-		printf("entries: ");
+
 		for(; argv[length+2] != NULL; length++){
 			list = realloc(list, (length+1)*sizeof(int));
 			list[length] = atoi(argv[length+2]);
-			printf("%d|", list[length]);
 			//sscanf(argv[length+2], "%d", &list[length]);
 		}
-		printf("\n");
+
 	}
 	
 	// check key length:
@@ -114,11 +87,7 @@ entry* entry_create(){
 		// some defined error action would normally occur here,
 		//  but that is outside scope of assessment.
 	}
-	printf("line 115: ");
-	for(int i = 0; i < length; i++){
-			printf("%d|", list[i]);
-	}
-	printf("\n");
+
 	// load up the entry with values:
 	strcpy(n->key, argv[1]);
 	n->values = list;
@@ -310,6 +279,7 @@ int main(void) {
 			for(int i = 0; i < 28; i++){
 				if(strcmp(argv[0],COMMAND_LIST[i])==0) (*ptrcommand[i])();
 			}
+			printf("\n");
 			
 		}
 			
@@ -334,7 +304,7 @@ void command_bye () {
 }
 
 void command_help() {
-    printf("%s\n", HELP);
+    printf("%s", HELP);
 }
 
 void command_get(){
@@ -373,11 +343,6 @@ void command_set(){
 		// create new entry and append to list
 		n = entry_create();
 		entry_push(entry_head, n);
-		for(int i = 0; i < n->length; i++){
-			printf("%d|", n->values[i]);
-		}
-		printf("\n");
-		
 	}else{
 		// set values in existing entry
 		entry_update(n);
@@ -482,7 +447,7 @@ void command_len(){
 	if(n == NULL){
 		printf("no such key\n");
 	}else{
-		printf("%d\n", n->length);
+		printf("%zu\n", n->length);
 	}
 	
 };
