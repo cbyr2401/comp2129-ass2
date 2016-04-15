@@ -82,11 +82,13 @@ void clean_argv(void){
 }
 
 entry* entry_create(){
+	printf("line 85: creating entry\n");
 	entry* n = (entry *) malloc(sizeof(entry));
 	int length = 0;
 	
 	// building list for entry:	
-	int* list = (int *)malloc(length * sizeof(int));
+	printf("line 90: creating list\n");
+	int* list = (int *)malloc(1 * sizeof(int));
 	if(argv[2] == NULL){
 		// empty list
 	}else if(argv[3] == NULL){
@@ -96,9 +98,12 @@ entry* entry_create(){
 	}else{
 		// multiple items:
 		length = 0;
+		printf("line 99: multiple items\n");
 		for(; argv[length+2] != NULL; length++){
+			printf("line 101: realloc %d length\n", length);
 			realloc(list, length+1);
-			sscanf(argv[length+2], "%d", &list[length]);
+			list[length] = atoi(argv[length+2]);
+			//sscanf(argv[length+2], "%d", &list[length]);
 		}
 	}
 	
@@ -213,6 +218,11 @@ void entry_removeAll(entry* head){
 			current = next;
 		}
 	}
+}
+
+// source: http://www.tutorialspoint.com/c_standard_library/c_function_qsort.htm
+int sortcmp(const void * a, const void * b){
+	return ( *(int*)a - *(int*)b );
 }
 
 
@@ -345,7 +355,17 @@ void command_append(){
 };
 
 void command_pick(){
-	
+	entry* n = entry_find(entry_head, argv[1]);
+	int index = atoi(argv[2]);
+	if(n == NULL){
+		printf("no such key\n");
+	}else{
+		if(index < 1 && index > n->length){
+			printf("index out of range\n");
+		}else{
+			printf("%d\n", n->values[index-1]);
+		}	
+	}
 };
 void command_pluck(){
 	
@@ -368,15 +388,64 @@ void command_snapshot(){
 };
 
 void command_min(){
-	
+	entry* n = entry_find(entry_head, argv[1]);
+	int min_value;
+	if(n == NULL){
+		printf("no such key\n");
+	}else{
+		if(n->values == 0){
+			printf("nil\n");
+		}else{
+			min_value = n->values[0];
+			for(int i = 1; i < n->length; i++){
+				if(n->values[i] < min_value) min_value = n->values[i];
+			}
+			printf("%d\n", min_value);
+		}
+	}
 };
 void command_max(){
-	
+	entry* n = entry_find(entry_head, argv[1]);
+	int max_value;
+	if(n == NULL){
+		printf("no such key\n");
+	}else{
+		if(n->values == 0){
+			printf("nil\n");
+		}else{
+			max_value = n->values[0];
+			for(int i = 1; i < n->length; i++){
+				if(n->values[i] > max_value) max_value = n->values[i];
+			}
+			printf("%d\n", max_value);
+		}
+	}
 };
 void command_sum(){
+	entry* n = entry_find(entry_head, argv[1]);
 	
+	if(n == NULL){
+		printf("no such key\n");
+	}else{
+		if(n->values == 0){
+			printf("nil\n");
+		}else{
+			int sum = 0;
+			for(int i = 0; i < n->length; i++){
+				sum += n->values[i];
+			}
+			printf("%d\n", sum);
+		}
+	}
 };
 void command_len(){
+	entry* n = entry_find(entry_head, argv[1]);
+	
+	if(n == NULL){
+		printf("no such key\n");
+	}else{
+		printf("%d\n", n->length);
+	}
 	
 };
 
@@ -387,7 +456,14 @@ void command_uniq(){
 	
 };
 void command_sort(){
+	entry* n = entry_find(entry_head, argv[1]);
 	
+	if(n == NULL){
+		printf("no such key\n");
+	}else{
+		qsort(n->values, n->length, sizeof(int), sortcmp);
+		printf("ok\n");
+	}
 };
 
 void command_diff(){
