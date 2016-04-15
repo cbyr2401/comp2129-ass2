@@ -84,6 +84,7 @@ void clean_argv(void){
 entry* entry_create(){
 	printf("line 85: creating entry\n");
 	entry* n = (entry *) malloc(sizeof(entry));
+	printf("line 87: initialize length... %p\n", n);
 	int length = 0;
 	
 	// building list for entry:	
@@ -98,13 +99,14 @@ entry* entry_create(){
 	}else{
 		// multiple items:
 		length = 0;
-		printf("line 99: multiple items\n");
+		printf("entries: ");
 		for(; argv[length+2] != NULL; length++){
-			printf("line 101: realloc %d length\n", length);
-			realloc(list, length+1);
+			list = realloc(list, (length+1)*sizeof(int));
 			list[length] = atoi(argv[length+2]);
+			printf("%d|", list[length]);
 			//sscanf(argv[length+2], "%d", &list[length]);
 		}
+		printf("\n");
 	}
 	
 	// check key length:
@@ -112,7 +114,11 @@ entry* entry_create(){
 		// some defined error action would normally occur here,
 		//  but that is outside scope of assessment.
 	}
-	
+	printf("line 115: ");
+	for(int i = 0; i < length; i++){
+			printf("%d|", list[i]);
+	}
+	printf("\n");
 	// load up the entry with values:
 	strcpy(n->key, argv[1]);
 	n->values = list;
@@ -128,7 +134,7 @@ void entry_update(entry* n){
 	free(n->values);
 	
 	for(; argv[length+2] != NULL; length++){
-			realloc(list, length+1);
+			list = realloc(list, length+1);
 			sscanf(argv[length+2], "%d", &list[length]);
 	}
 	// update length:
@@ -158,6 +164,31 @@ void entry_append(entry* head, entry* n){
 		n->next = NULL;
 		// for rapid fire adding of elements:
 		entry_tail = n;
+	}	
+}
+
+void entry_push(entry* head, entry* n){
+	entry* current = head;
+	if(current == NULL){
+		// first element in list.
+		entry_head = n;
+		entry_tail = n;
+		n->next = NULL;
+		n->prev = NULL;
+	}else{
+		// search the list until the end:
+		//while(current->next != NULL){
+			//current = current->next;
+		//}
+		// for rapid fire adding of elements:
+		current = entry_head;
+		
+		// create link
+		current->prev = n;
+		n->prev = NULL;
+		n->next = current;
+		// for rapid fire adding of elements:
+		entry_head = n;
 	}	
 }
 
@@ -273,7 +304,7 @@ int main(void) {
 				// concat the two words together:
 				sprintf(argv[0], "%s %s", argv[0], argv[1]);
 			}
-
+			
 			// look for a matching command and then run it.
 			// TODO: put in strcasecmp
 			for(int i = 0; i < 28; i++){
@@ -328,6 +359,7 @@ void command_del(){
 		printf("no such key\n");
 	}else{
 		entry_remove(n);
+		printf("ok\n");
 	}
 };
 void command_purge(){
@@ -340,12 +372,18 @@ void command_set(){
 	if(entry_head == NULL || n == NULL){
 		// create new entry and append to list
 		n = entry_create();
-		entry_append(entry_head, n);
+		entry_push(entry_head, n);
+		for(int i = 0; i < n->length; i++){
+			printf("%d|", n->values[i]);
+		}
+		printf("\n");
+		
 	}else{
 		// set values in existing entry
 		entry_update(n);
 	}	
 	// operation completed.
+	printf("ok\n");
 };
 void command_push(){
 	
@@ -498,9 +536,9 @@ void command_listEntries(){
 		while(current != NULL){
 			printf("%s [", current->key);
 			for(int i = 0; i < current->length; i++){
-				if(i==current->length-1){
+				if(i==(current->length)-1){
 					printf("%d", current->values[i]);
-				} else{
+				}else{
 					printf("%d ", current->values[i]);
 				}
 			}
