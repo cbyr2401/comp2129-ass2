@@ -338,6 +338,11 @@ void command_del(){
 
 void command_purge(){
 	
+	
+	
+	
+	
+	printf("ok\n");
 };
 
 void command_set(){
@@ -395,7 +400,7 @@ void command_pick(){
 	if(n == NULL){
 		printf("no such key\n");
 	}else{
-		if(index < 1 && index > n->length){
+		if(index < 1 || index > n->length){
 			printf("index out of range\n");
 		}else{
 			printf("%d\n", n->values[index-1]);
@@ -409,10 +414,10 @@ void command_pluck(){
 	if(n == NULL){
 		printf("no such key\n");
 	}else{
-		if(index < 1 && index > n->length){
+		if(index < 1 || index > n->length){
 			printf("index out of range\n");
 		}else{
-			int value = n->values[index];
+			int value = n->values[index-1];
 			// shift all values down by one slot.
 			for(int i = index; i < n->length-1; i++) n->values[i] = n->values[i+1];
 			n->values = realloc(n->values, (n->length-1)*sizeof(int));
