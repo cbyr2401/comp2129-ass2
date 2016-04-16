@@ -403,7 +403,21 @@ void command_pluck(){
 	
 };
 void command_pop(){
-	
+	entry* n = entry_find(entry_head, argv[1]);
+	if(n == NULL){
+		printf("no such key\n");
+	}else{
+		if(n->length == 0){
+			printf("nil\n");
+		}else{
+			int value = n->values[0];
+			// shift all values down by one slot.
+			for(int i = 0; i < n->length-1; i++) n->values[i] = n->values[i+1];
+			n->values = realloc(n->values, (n->length-1)*sizeof(int));
+			n->length = n->length-1;
+			printf("%d\n", value);
+		}
+	}
 };
 
 void command_drop(){
@@ -425,7 +439,7 @@ void command_min(){
 	if(n == NULL){
 		printf("no such key\n");
 	}else{
-		if(n->values == 0){
+		if(n->length == 0){
 			printf("nil\n");
 		}else{
 			min_value = n->values[0];
@@ -442,7 +456,7 @@ void command_max(){
 	if(n == NULL){
 		printf("no such key\n");
 	}else{
-		if(n->values == 0){
+		if(n->length == 0){
 			printf("nil\n");
 		}else{
 			max_value = n->values[0];
@@ -459,7 +473,7 @@ void command_sum(){
 	if(n == NULL){
 		printf("no such key\n");
 	}else{
-		if(n->values == 0){
+		if(n->length == 0){
 			printf("nil\n");
 		}else{
 			int sum = 0;
