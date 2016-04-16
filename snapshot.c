@@ -23,7 +23,8 @@ entry* entry_tail = NULL;
 snapshot* snapshot_head = NULL;
 snapshot* snapshot_tail = NULL;
 
-char * argv[MAX_COMMAND]; // = malloc(MAX_COMMAND * sizeof(char));
+char * argv[MAX_COMMAND];
+int next_snapshot_id = 1;
 
 //
 // We recommend that you design your program to be
@@ -146,10 +147,6 @@ void entry_push(entry* head, entry* n){
 		n->next = NULL;
 		n->prev = NULL;
 	}else{
-		// search the list until the end:
-		//while(current->next != NULL){
-			//current = current->next;
-		//}
 		// for rapid fire adding of elements:
 		current = entry_head;
 		
@@ -172,6 +169,19 @@ entry* entry_find(entry* head, char* key){
 		current = current->next;
 	}
 	if(strcmp(current->key, key) == 0) return current;
+	else return NULL;
+}
+
+// searches given linked list for a key and then 
+//  returns the address or NULL.
+snapshot* snapshot_find(snapshot* head, int id){
+	// search the list until the end:
+	snapshot* current = head;
+	if(head == NULL) return NULL;
+	while(current->next != NULL && current->id != id ){
+		current = current->next;
+	}
+	if(current->id == id) return current;
 	else return NULL;
 }
 
@@ -219,6 +229,79 @@ void entry_removeAll(entry* head){
 			current = next;
 		}
 	}
+}
+
+entry* entry_copy(entry* master){
+	entry* copy = (entry *) malloc(sizeof(entry));
+	int length = master->length;
+	
+	// building list for copy entry:	
+	int* list = (int *)malloc(length * sizeof(int));
+	
+	// copy the values list::
+	for(int i = 0; i < length; i++) list[i] = master->values[i];
+
+
+	// load up the entry with values:
+	strcpy(copy->key, master->key);
+	copy->values = list;
+	copy->length = length;
+	
+	// this function is finished...
+	return copy;
+}
+
+entry* entry_listCopy(entry* head){
+	entry* current = head;
+	entry* copy;
+	entry* new_head = NULL;
+	//entry* new_tail = NULL;
+	
+	if(head==NULL){
+		// no entries in list to snapshot
+	}else{
+		while(current->next != NULL){
+			copy = entry_copy(current);
+			if(new_head == NULL){
+				// first element in list.
+				new_head = copy;
+				//new_tail = copy;
+				copy->next = NULL;
+				copy->prev = NULL;
+			}else{
+				// create link
+				new_head->prev = copy;
+				copy->prev = NULL;
+				copy->next = new_head;
+				// for rapid fire adding of elements:
+				new_head = copy;
+			}
+			current = current->next;
+		}	
+	}
+	return new_head;
+
+}
+
+void snapshot_push(snapshot* head, snapshot* n){
+	snapshot* current = head;
+	if(current == NULL){
+		// first element in list.
+		snapshot_head = n;
+		snapshot_tail = n;
+		n->next = NULL;
+		n->prev = NULL;
+	}else{
+		// for rapid fire adding of elements:
+		current = snapshot_head;
+		
+		// create link
+		current->prev = n;
+		n->prev = NULL;
+		n->next = current;
+		// for rapid fire adding of elements:
+		snapshot_head = n;
+	}	
 }
 
 // source: http://www.tutorialspoint.com/c_standard_library/c_function_qsort.htm
@@ -339,7 +422,7 @@ void command_del(){
 void command_purge(){
 	
 	
-	
+	// TODO
 	
 	
 	printf("ok\n");
@@ -452,10 +535,33 @@ void command_rollback(){
 	
 };
 void command_checkout(){
-	
+	int index = atoi(argv[1]);
+	snapshot* n = snapshot_find(snapshot_head, index);
+	if(n == NULL){
+		printf("no such snapshot\n");
+	}else{
+		// remove all entries to avoid memory leaks
+		entry_removeAll(entry_head);
+		// insert new head from snapshot
+		entry_head = n->entries;
+		// output
+		printf("ok\n");
+	}
 };
+
 void command_snapshot(){
-	
+	// create new snapshot
+	snapshot* snap = (snapshot*)malloc(sizeof(snapshot));
+	// assign new snapshot an id
+	snap->id = next_snapshot_id;
+	// assign new snapshot current state:
+	snap->entries = entry_listCopy(entry_head);
+	// add new snapshot to linked-list:
+	snapshot_push(snapshot_head, snap);
+	// print output
+	printf("saved as snapshot %d\n", next_snapshot_id);
+	// increment id (to maintain unique-ness)
+	next_snapshot_id++;
 };
 
 void command_min(){
