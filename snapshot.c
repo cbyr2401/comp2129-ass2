@@ -7,9 +7,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
+//#include <strings.h>
 #include <stdbool.h>
 #include <ctype.h>  // toupper()
+#include <stddef.h>
 
 #include "snapshot.h"
 
@@ -276,6 +277,7 @@ int main(void) {
 			
 			// look for a matching command and then run it.
 			// TODO: put in strcasecmp
+			
 			for(int i = 0; i < 28; i++){
 				if(strcmp(argv[0],COMMAND_LIST[i])==0) (*ptrcommand[i])();
 			}
@@ -351,10 +353,37 @@ void command_set(){
 	printf("ok\n");
 };
 void command_push(){
-	
+	entry* n = entry_find(entry_head, argv[1]);
+	if(n == NULL){
+		printf("no such key\n");
+	}else{
+		int length = n->length;
+		for(int j = 2; argv[j] != NULL; j++){
+				n->values = realloc(n->values, (length+1)*sizeof(int));
+				// shift all values down by one:
+				for(int i = length; i > 0; i--) n->values[i] = n->values[i-1];
+				n->values[0] = atoi(argv[j]);
+				length++;
+		}
+		n->length = length;
+		printf("ok\n");
+	}
 };
+
 void command_append(){
-	
+	entry* n = entry_find(entry_head, argv[1]);
+	if(n == NULL){
+		printf("no such key\n");
+	}else{
+		int length = n->length;
+		for(int j = 2; argv[j] != NULL; j++){
+				n->values = realloc(n->values, (length+1)*sizeof(int));
+				n->values[length] = atoi(argv[j]);
+				length++;
+		}
+		n->length = length;
+		printf("ok\n");
+	}
 };
 
 void command_pick(){
