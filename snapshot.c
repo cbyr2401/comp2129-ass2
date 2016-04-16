@@ -325,6 +325,7 @@ void command_get(){
 		printf("]\n");
 	}
 };
+
 void command_del(){
 	entry* n = entry_find(entry_head, argv[1]);
 	if(n == NULL){
@@ -334,6 +335,7 @@ void command_del(){
 		printf("ok\n");
 	}
 };
+
 void command_purge(){
 	
 };
@@ -352,6 +354,7 @@ void command_set(){
 	// operation completed.
 	printf("ok\n");
 };
+
 void command_push(){
 	entry* n = entry_find(entry_head, argv[1]);
 	if(n == NULL){
@@ -399,9 +402,26 @@ void command_pick(){
 		}	
 	}
 };
+
 void command_pluck(){
-	
+	entry* n = entry_find(entry_head, argv[1]);
+	int index = atoi(argv[2]);
+	if(n == NULL){
+		printf("no such key\n");
+	}else{
+		if(index < 1 && index > n->length){
+			printf("index out of range\n");
+		}else{
+			int value = n->values[index];
+			// shift all values down by one slot.
+			for(int i = index; i < n->length-1; i++) n->values[i] = n->values[i+1];
+			n->values = realloc(n->values, (n->length-1)*sizeof(int));
+			n->length = n->length-1;
+			printf("%d\n", value);
+		}	
+	}
 };
+
 void command_pop(){
 	entry* n = entry_find(entry_head, argv[1]);
 	if(n == NULL){
