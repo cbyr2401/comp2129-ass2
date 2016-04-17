@@ -26,21 +26,6 @@ snapshot* snapshot_tail = NULL;
 char * argv[MAX_COMMAND];
 int next_snapshot_id = 1;
 
-//
-// We recommend that you design your program to be
-// modular where each function performs a small task
-//
-// e.g.
-//
-// command_bye
-// command_help
-// ...
-// entry_add
-// entry_delete
-// ...
-//
-
-
 
 void (*ptrcommand[28])() = {
 	command_bye, command_help, command_get,
@@ -54,11 +39,19 @@ void (*ptrcommand[28])() = {
 	command_listKeys, command_listEntries, command_listSnapshots
 };
 
-// function to clean argv global 
+/*
+ *	Description: 	Removes all elements in global argv (sets to NULL)
+ * 	Return:			none.
+ */
 void clean_argv(void){
 	for(int i = 0; i < ARRLEN(argv); i++) argv[i] = NULL;
 }
 
+/*
+ *	Description: 	Creates a new entry.  Uses values stored in global argv, 
+ *					 populated by command line.
+ *	Return:			Pointer to newly created entry.
+ */
 entry* entry_create(){
 	entry* n = (entry *) malloc(sizeof(entry));
 	int length = 0;
@@ -99,6 +92,11 @@ entry* entry_create(){
 	return n;
 }
 
+/*
+ *	Description: 	Changes values in provided entry.
+ *					 NOTE: This method is unsafe.  Only use with SET.
+ * 	Return:			none.
+ */
 void entry_update(entry* n){
 	int length = 0;
 	int* list = (int *)malloc(length * sizeof(int));
@@ -113,6 +111,11 @@ void entry_update(entry* n){
 	n->values = list;
 }
 
+/*
+ *	Description: 	Adds provided entry to back of linked list (entry_head).
+ *					 NOTE: This method is unsafe.
+ *	Return:			none.
+ */
 void entry_append(entry* head, entry* n){
 	entry* current = head;
 	if(current == NULL){
@@ -122,10 +125,6 @@ void entry_append(entry* head, entry* n){
 		n->next = NULL;
 		n->prev = NULL;
 	}else{
-		// search the list until the end:
-		//while(current->next != NULL){
-			//current = current->next;
-		//}
 		// for rapid fire adding of elements:
 		current = entry_tail;
 		
@@ -138,6 +137,11 @@ void entry_append(entry* head, entry* n){
 	}	
 }
 
+/*
+ *	Description: 	Adds provided entry to front of linked list (entry_head).
+ *					 NOTE: This method is unsafe.
+ *	Return:			none.
+ */
 void entry_push(entry* head, entry* n){
 	entry* current = head;
 	if(current == NULL){
@@ -159,8 +163,10 @@ void entry_push(entry* head, entry* n){
 	}	
 }
 
-// searches given linked list for a key and then 
-//  returns the address or NULL.
+/*
+ *	Description: 	Searches provided linked list for a entry given key.
+ *	Return:			Pointer to located entry or NULL (not located).
+ */
 entry* entry_find(entry* head, char* key){
 	// search the list until the end:
 	entry* current = head;
@@ -172,8 +178,10 @@ entry* entry_find(entry* head, char* key){
 	else return NULL;
 }
 
-// searches given linked list for a key and then 
-//  returns the address or NULL.
+/*
+ *	Description: 	Searches provided linked list for a snapshot.
+ *	Return:			Pointer to located snapshot or NULL (not located).
+ */
 snapshot* snapshot_find(snapshot* head, int id){
 	// search the list until the end:
 	snapshot* current = head;
@@ -185,6 +193,11 @@ snapshot* snapshot_find(snapshot* head, int id){
 	else return NULL;
 }
 
+/*
+ *	Description: 	Removes provided entry from linked list (entry_head).
+ *					 NOTE: This method is unsafe.
+ *	Return:			none.
+ */
 void entry_remove(entry* n){
 	if(n->prev == NULL && n->next == NULL){
 		// only element in list
@@ -216,6 +229,11 @@ void entry_remove(entry* n){
 	}
 }
 
+/*
+ *	Description: 	Removes all entries from linked list (entry_head).
+ *					 NOTE: This method is unsafe because it calls entry_remove()
+ *	Return:			none.
+ */
 void entry_removeAll(entry* head){
 	entry* current = head;
 	entry* next = NULL;
@@ -231,6 +249,35 @@ void entry_removeAll(entry* head){
 	}
 }
 
+/*
+ *	Description: 	free() entry from memory (SAFE).
+ *	Return: 		value of next in struct or NULL (last element in list)
+ */
+entry* entry_free(entry* n){
+	if(n == NULL) return NULL;
+	// store next:
+	entry* next = n->next;
+	// free memory of values, then the struct
+	free(n->values);
+	free(n);
+	return next;
+}
+
+/*
+ *	Description: 	free() all entries in provied linked-list from memory (SAFE).
+ *	Return: 		none.
+ */
+void entry_freeList(entry* n){
+	entry* current = n;
+	while(current != NULL){
+		current = entry_free(current);
+	}
+}
+
+/*
+ *	Description: 	Creates a duplicate of the provided entry.
+ *	Return: 		Pointer to new entry.
+ */
 entry* entry_copy(entry* master){
 	entry* copy = (entry *) malloc(sizeof(entry));
 	int length = master->length;
@@ -251,6 +298,10 @@ entry* entry_copy(entry* master){
 	return copy;
 }
 
+/*
+ *	Description: 	Creates a duplicate of the provided linked-list.
+ *	Return: 		Pointer to new linked-list.
+ */
 entry* entry_listCopy(entry* head){
 	entry* current = head;
 	entry* copy;
@@ -283,7 +334,11 @@ entry* entry_listCopy(entry* head){
 
 }
 
-void snapshot_push(snapshot* head, snapshot* n){
+/*
+ *	Description: 	Adds provided snapshot to linked-list (UNSAFE).
+ *	Return: 		none.
+ */
+void snapshot_append(snapshot* head, snapshot* n){
 	snapshot* current = head;
 	if(current == NULL){
 		// first element in list.
@@ -293,15 +348,70 @@ void snapshot_push(snapshot* head, snapshot* n){
 		n->prev = NULL;
 	}else{
 		// for rapid fire adding of elements:
-		current = snapshot_head;
+		current = snapshot_tail;
 		
 		// create link
-		current->prev = n;
-		n->prev = NULL;
-		n->next = current;
+		current->next = n;
+		n->next = NULL;
+		n->prev = current;
 		// for rapid fire adding of elements:
-		snapshot_head = n;
+		snapshot_tail = n;
 	}	
+}
+
+/*
+ *	Description: 	Removes provided snapshot from linked-list (UNSAFE).
+ *	Return: 		none.
+ */
+void snapshot_remove(snapshot* n){
+	if(n->prev == NULL && n->next == NULL){
+		// only element in list
+		snapshot_head = NULL;
+		// free memory of values, then the struct
+		entry_freeList(n->entries);
+		free(n);
+	}else if(n->prev == NULL && n->next != NULL){
+		// we are dealing with the first element:
+		snapshot_head = n->next;
+		n->next->prev = NULL;
+		// free memory of values, then the struct
+		entry_freeList(n->entries);
+		free(n);
+	}else if(n->next == NULL && n->prev != NULL){
+		// we are dealing with the last element:
+		snapshot_tail = n->prev;
+		n->prev->next = NULL;
+		// free memory of values, then the struct
+		entry_freeList(n->entries);
+		free(n);
+	}else{
+		// rebuild link, with n removed.
+		n->next->prev = n->prev;
+		n->prev->next = n->next;
+		// free memory of values, then the struct
+		entry_freeList(n->entries);
+		free(n);
+	}
+}
+
+/*
+ *	Description: 	Removes all snapshots from linked list (snapshot_head).
+ *					 NOTE: This method is unsafe because it calls entry_remove()
+ *	Return:			none.
+ */
+void snapshot_removeAll(snapshot* head){
+	snapshot* current = head;
+	snapshot* next = NULL;
+	if(head == NULL){
+		// nothing to clean up :)
+	}else{
+		// free all memory from each individual entry:
+		while(current != NULL){
+			next = current->next;
+			snapshot_remove(current);
+			current = next;
+		}
+	}
 }
 
 // source: http://www.tutorialspoint.com/c_standard_library/c_function_qsort.htm
@@ -382,8 +492,10 @@ void command_bye () {
 	// clean up all memory
 	// printf
 	// exit
-	entry_removeAll(entry_head);
+	entry_freeList(entry_head);
 	// snapshot clean all... bit harder.
+	snapshot_removeAll(snapshot_head);
+	// say bye:
     printf("bye\n");
 	exit(0);
 }
@@ -529,11 +641,40 @@ void command_pop(){
 };
 
 void command_drop(){
-	
+	int index = atoi(argv[1]);
+	snapshot* n = snapshot_find(snapshot_head, index);
+	if(n == NULL){
+		printf("no such snapshot\n");
+	}else{
+		// remove snapshot from snapshot_head
+		snapshot_remove(n);
+		printf("ok\n");
+	}
 };
+
 void command_rollback(){
-	
+	int index = atoi(argv[1]);
+	snapshot* n = snapshot_find(snapshot_head, index);
+	if(n == NULL){
+		printf("no such snapshot\n");
+	}else{
+		// remove all entries to avoid memory leaks
+		entry_freeList(entry_head);
+		// insert new head from snapshot
+		entry_head = entry_listCopy(n->entries);
+		// remove all entries after current one:
+		snapshot* current = n->next;
+		snapshot* next = NULL;
+		while(current != NULL){
+			next = current->next;
+			snapshot_remove(current);
+			current = next;
+		}
+		// output
+		printf("ok\n");
+	}
 };
+
 void command_checkout(){
 	int index = atoi(argv[1]);
 	snapshot* n = snapshot_find(snapshot_head, index);
@@ -541,7 +682,7 @@ void command_checkout(){
 		printf("no such snapshot\n");
 	}else{
 		// remove all entries to avoid memory leaks
-		entry_removeAll(entry_head);
+		entry_freeList(entry_head);
 		// insert new head from snapshot
 		entry_head = entry_listCopy(n->entries);
 		// output
@@ -557,7 +698,7 @@ void command_snapshot(){
 	// assign new snapshot current state:
 	snap->entries = entry_listCopy(entry_head);
 	// add new snapshot to linked-list:
-	snapshot_push(snapshot_head, snap);
+	snapshot_append(snapshot_head, snap);
 	// print output
 	printf("saved as snapshot %d\n", next_snapshot_id);
 	// increment id (to maintain unique-ness)
