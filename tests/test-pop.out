@@ -1,0 +1,27 @@
+> no such key
+
+> no such key
+
+> no such key
+
+> ok
+
+> a [1 2 3]
+
+> 1
+
+> a [2 3]
+
+> 2
+
+> a [3]
+
+> 3
+
+> a []
+
+> nil
+
+> a []
+
+> bye
