@@ -396,7 +396,7 @@ void snapshot_remove(snapshot* n){
 
 /*
  *	Description: 	Removes all snapshots from linked list (snapshot_head).
- *					 NOTE: This method is unsafe because it calls entry_remove()
+ *					 NOTE: This method is unsafe because it calls snapshot_remove()
  *	Return:			none.
  */
 void snapshot_removeAll(snapshot* head){
@@ -532,11 +532,21 @@ void command_del(){
 };
 
 void command_purge(){
+	// remove from database
+	// remove from snapshots
+	entry* n = entry_find(entry_head, argv[1]);
+
+	// remove from current database
+	if(n != NULL) entry_remove(n);
 	
-	
-	// TODO
-	
-	
+	// search all snapshots for entry:
+	snapshot* current_snapshot = snapshot_head;
+	while(current_snapshot != NULL){
+		n = entry_find(current_snapshot->entries, argv[1]);
+		if(n != NULL) entry_remove(n);
+		current_snapshot = current_snapshot->next;
+	}
+	// always prints ok:
 	printf("ok\n");
 };
 
