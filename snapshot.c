@@ -229,36 +229,75 @@ void command_set(){
 	printf("ok\n");
 };
 
-void command_push(){
-	// search for entry with given <key>
-	entry* n = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
+void push_command(){
+	entry* working_entry = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
 	
-	if(n == NULL){
-		printf("no such key\n");
-	}else{
-		/* Each time there is a new value to PUSH:
-		 * 1) resize array
-		 * 2) shift all elements right by 1
-		 * 3) add new item to front of array
-		 */
-		int length = n->length;
-		for(int j = COMMAND_VALUES_INITAL; argv[j] != NULL; j++){
-			// resize array
-			n->values = realloc(n->values, (length+1)*sizeof(int));
-			
-			// shift all values right by one:
-			for(int i = length; i > 0; i--) n->values[i] = n->values[i-1];
-			
-			// add new element:
-			n->values[0] = atoi(argv[j]);
-			
-			length++;
-		}
-		// update length of array in entry
-		n->length = length;
-		
-		printf("ok\n");
+	
+
+	if (working_entry == NULL){
+		printf("no such entry");
+		return;
 	}
+	else{
+		int counter = working_entry->length;
+		char* push_keyvalue = argv[2];
+		int j = 1;
+		while (push_keyvalue != NULL){
+			printf("issue: in while loop\n");
+			int push_intvalue =	atoi(push_keyvalue);
+			printf("issue: got value\n");
+			working_entry->values = realloc(working_entry->values, sizeof(int)*(counter+1));
+
+			for (int i = counter-1; i>=0; i--){
+				printf("issue: %d\n", working_entry->values[i]);
+				working_entry->values[i+1] = working_entry->values[i];
+
+				if (i == 0){
+					working_entry->values[i] = push_intvalue;
+				}
+			}
+
+	 		counter++;
+			working_entry->length = counter;
+			
+	 		push_keyvalue = argv[2+j];
+			j++;
+	 	}
+		//printf("length: %zu\n",working_entry->length );
+	}
+};
+
+void command_push(){
+	push_command();
+	// // search for entry with given <key>
+	// entry* n = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
+	
+	// if(n == NULL){
+		// printf("no such key\n");
+	// }else{
+		// /* Each time there is a new value to PUSH:
+		 // * 1) resize array
+		 // * 2) shift all elements right by 1
+		 // * 3) add new item to front of array
+		 // */
+		// int length = n->length;
+		// for(int j = COMMAND_VALUES_INITAL; argv[j] != NULL; j++){
+			// // resize array
+			// n->values = realloc(n->values, (length+1)*sizeof(int));
+			
+			// // shift all values right by one:
+			// for(int i = length; i > 0; i--) n->values[i] = n->values[i-1];
+			
+			// // add new element:
+			// n->values[0] = atoi(argv[j]);
+			
+			// length++;
+		// }
+		// // update length of array in entry
+		// n->length = length;
+		
+		// printf("ok\n");
+	// }
 };
 
 void command_append(){
