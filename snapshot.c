@@ -255,26 +255,26 @@ entry* entry_listCopy(entry* head){
 	entry* current = head;
 	entry* copy;
 	entry* new_head = NULL;
-	//entry* new_tail = NULL;
+	entry* new_tail = NULL;
 	
 	if(head==NULL){
 		// no entries in list to snapshot
 	}else{
-		while(current->next != NULL){
+		while(current != NULL){
 			copy = entry_copy(current);
 			if(new_head == NULL){
 				// first element in list.
 				new_head = copy;
-				//new_tail = copy;
+				new_tail = copy;
 				copy->next = NULL;
 				copy->prev = NULL;
 			}else{
 				// create link
-				new_head->prev = copy;
-				copy->prev = NULL;
-				copy->next = new_head;
+				new_tail->next = copy;
+				copy->prev = new_tail;
+				copy->next = NULL;
 				// for rapid fire adding of elements:
-				new_head = copy;
+				new_tail = copy;
 			}
 			current = current->next;
 		}	
@@ -543,7 +543,7 @@ void command_checkout(){
 		// remove all entries to avoid memory leaks
 		entry_removeAll(entry_head);
 		// insert new head from snapshot
-		entry_head = n->entries;
+		entry_head = entry_listCopy(n->entries);
 		// output
 		printf("ok\n");
 	}
