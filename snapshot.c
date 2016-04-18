@@ -596,25 +596,70 @@ void command_diff(){
 
 void command_inter(){
 	int * list = malloc(1*sizeof(int));
-	entry* n;
+	entry* first_set;
+	entry* second_set;
 	
 	int index = 0;
+	int result;
 	// search for n-th entry with given <key>
-	for(int i = 0; argv[COMMAND_KEY_NUM+i] != NULL; i++){
-		n = entry_find(entry_head, argv[COMMAND_KEY_NUM+i]);
+	for(int i = 0; argv[COMMAND_KEY_NUM+i+1] != NULL; i++){
+		first_set = entry_find(entry_head, argv[COMMAND_KEY_NUM+i]);
+		
 		
 		// check if entry exists:
-		if(n == NULL) {
+		if(first_set == NULL) {
 			printf("no such key\n");
 			return;
 		}
-		// // add items to list:
-		// for(int j = 0; j < n->length; j++){
-			// list[index] = n->values[j];
-			// index++;
-			// list = (int *)realloc(list, (index+1)*sizeof(int));
-		// }
+
+		// only run this for the first two...
+		for(int c=0; c < first_entry->length; c++){
+			second_set = entry_find(entry_head, argv[COMMAND_KEY_NUM+i+1]);
+			// loop over elements until end of first entry.  
+			// If the elements do not overlap, it won't be in first_set.
+			result = entry_searchcmp(first_entry, second_entry, first_entry->values[i])
+			// check return value
+			if(result == NULL){
+				continue;
+			}else{
+				// add to list
+				list[index] = result;
+				index++;
+				list = (int *)realloc(list, (index+1)*sizeof(int));
+			}
+		}
+		// remove duplicates by sorting entries and uniq
+		qsort(list, index, sizeof(int), sortcmp);
+		index = uniq(list, index);
+		
+		// compare values in list against latest scanned entry
+		for(int c=0; c < index; c++){
+			if(entry_search(second_entry, list[c]) == NULL){
+				// remove value from list by shifting everything down, then realloc:
+				// shift all values left by one slot.
+				for(int i = j; i < index-1; i++) list[i] = list[i+1];
+				
+				// resize array
+				list = realloc(list, (index-1)*sizeof(int));
+				
+				// update length
+				index = index-1;
+			}
+		}
+		// set first set to second...
+		second_set = first_set;
 	}
+
+	printf("[");
+	// ... in the accepted format
+	for(int i = 0; i < index; i++){
+		if(i == index-1){
+			printf("%d", list[i]);
+		}else{
+			printf("%d ", list[i]);
+		}
+	}
+	printf("]\n");
 };
 
 void command_union(){
@@ -721,6 +766,34 @@ void command_listSnapshots(){
  *	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
+ /*
+  *	Description: 	Searches given entry for a value
+  *	Return:			value if found, NULL if not found
+  */
+int entry_searchcmp(entry* first, entry* second, int search){
+	int isInFirst = 0;
+	int isInSecond = 0;
+	for(int i = 0; i < first->length; i++){
+		if(first->values[i] == search) isInFirst = 1;
+	}
+	
+	if(isInFirst == 0) return NULL;
+	
+	for(int i = 0; i < second->length; i++){
+		if(second->values[i] == search) isInSecond = 1;
+	}
+	
+	if(isInFirst && isInSecond) return value;
+	else return NULL;
+}
+
+int entry_search(entry* first, int search){
+	for(int i = 0; i < first->length; i++){
+		if(first->values[i] == search) return value;
+	}
+	return NULL;
+}
+ 
  /*
   *	Description: 	Removes all adjacent duplicate values
   *	Return:			Pointer to list that was changed
