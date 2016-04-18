@@ -21,6 +21,8 @@
 #define COMMAND_ID_NUM 1
 #define COMMAND_VALUES_INITAL 2
 
+#define DEBUG 1
+
 entry* entry_head = NULL;
 entry* entry_tail = NULL;
 
@@ -33,6 +35,7 @@ int next_snapshot_id = 1;
 // Declare function foot prints (TODO: move to header file after refractoring)
 void clean_argv();
 int sortcmp(const void * a, const void * b);
+int uniq(int* values, int length);
 
 entry* entry_create();
 void entry_update(entry* node);
@@ -70,7 +73,8 @@ int main(void) {
 	char line[MAX_LINE];
 
 	while (true) {
-    	printf("> ");
+		if(DEBUG==0) printf("> ");
+    	
 
     	if (fgets(line, MAX_LINE, stdin) == NULL) {
     	    //(*ptrc[0])();
@@ -114,7 +118,7 @@ int main(void) {
 				if(strcmp(argv[COMMAND_ARG_NUM],COMMAND_LIST[i])==0) (*ptrcommand[i])();
 			}
 			
-			printf("\n");
+			if(DEBUG==0) printf("\n");
 		}
   	}
 
@@ -537,15 +541,41 @@ void command_len(){
 		// output length (stored in struct)
 		printf("%zu\n", n->length);
 	}
-	
 };
 
 void command_rev(){
+	// search for entry with given <key>
+	entry* n = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
 	
+	if(n == NULL){
+		printf("no such key\n");
+	}else{
+		int temp;
+		// swap entries... front -> back, back->front
+		for(int i = 0; i < (n->length/2); i++){
+			temp = n->values[i];
+			n->values[i] = n->values[n->length-i-1];
+			n->values[n->length-i-1] = temp;
+		}
+		// output
+		printf("ok\n");
+	}
 };
+
 void command_uniq(){
+	// search for entry with given <key>
+	entry* n = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
 	
+	if(n == NULL){
+		printf("no such key\n");
+	}else{
+		n->length = uniq(n->values, n->length);
+		
+		// output
+		printf("ok\n");
+	}
 };
+
 void command_sort(){
 	// search for entry with given <key>
 	entry* n = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
@@ -563,11 +593,68 @@ void command_sort(){
 void command_diff(){
 	
 };
+
 void command_inter(){
+	int * list = malloc(1*sizeof(int));
+	entry* n;
 	
+	int index = 0;
+	// search for n-th entry with given <key>
+	for(int i = 0; argv[COMMAND_KEY_NUM+i] != NULL; i++){
+		n = entry_find(entry_head, argv[COMMAND_KEY_NUM+i]);
+		
+		// check if entry exists:
+		if(n == NULL) {
+			printf("no such key\n");
+			return;
+		}
+		// // add items to list:
+		// for(int j = 0; j < n->length; j++){
+			// list[index] = n->values[j];
+			// index++;
+			// list = (int *)realloc(list, (index+1)*sizeof(int));
+		// }
+	}
 };
+
 void command_union(){
+	int * list = malloc(1*sizeof(int));
+	entry* n;
 	
+	int index = 0;
+	// search for n-th entry with given <key>
+	for(int i = 0; argv[COMMAND_KEY_NUM+i] != NULL; i++){
+		n = entry_find(entry_head, argv[COMMAND_KEY_NUM+i]);
+		
+		// check if entry exists:
+		if(n == NULL) {
+			printf("no such key\n");
+			return;
+		}
+		// add items to list:
+		for(int j = 0; j < n->length; j++){
+			list[index] = n->values[j];
+			index++;
+			list = (int *)realloc(list, (index+1)*sizeof(int));
+		}
+	}
+
+	// sort entries
+	qsort(list, index, sizeof(int), sortcmp);
+	
+	index = uniq(list, index);
+
+	// output the list
+	printf("[");
+	// ... in the accepted format
+	for(int i = 0; i < index; i++){
+		if(i == index-1){
+			printf("%d", list[i]);
+		}else{
+			printf("%d ", list[i]);
+		}
+	}
+	printf("]\n");
 };
 
 void command_listKeys(){
@@ -634,6 +721,30 @@ void command_listSnapshots(){
  *	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
+ /*
+  *	Description: 	Removes all adjacent duplicate values
+  *	Return:			Pointer to list that was changed
+  */
+ int uniq(int* values, int length){
+	// check if element is same, side by side.
+	for(int j = 1; j < length; j++){
+		if(values[j] == values[j-1]){
+			// shift all values left by one slot.
+			for(int i = j; i < length-1; i++) values[i] = values[i+1];
+			
+			// resize array
+			values = realloc(values, (length-1)*sizeof(int));
+			
+			// update length
+			length = length-1;
+			
+			// check these again, since everything moved.
+			j--;
+		}
+	}
+	return length;
+ }
+ 
 /*
  *	Description: 	Removes all elements in global argv (sets to NULL)
  * 	Return:			none.
