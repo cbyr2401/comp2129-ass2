@@ -21,7 +21,7 @@
 #define COMMAND_ID_NUM 1
 #define COMMAND_VALUES_INITAL 2
 
-#define DEBUG 1
+#define DEBUG 0
 
 entry* entry_head = NULL;
 entry* entry_tail = NULL;
@@ -569,8 +569,10 @@ void command_uniq(){
 	if(n == NULL){
 		printf("no such key\n");
 	}else{
-		n->length = uniq(n->values, n->length);
 		
+		n->length = uniq(n->values, n->length);
+		n->values = realloc(n->values, n->length*sizeof(int));
+				
 		// output
 		printf("ok\n");
 	}
@@ -595,71 +597,38 @@ void command_diff(){
 };
 
 void command_inter(){
-	int * list = malloc(1*sizeof(int));
-	entry* first_set;
-	entry* second_set;
+	// int * list = malloc(1*sizeof(int));
+	// entry* first_set;
+	// entry* second_set;
+	// array* first_arr;
+	// array* second_arr;
 	
-	int index = 0;
-	int result;
-	// search for n-th entry with given <key>
-	for(int i = 0; argv[COMMAND_KEY_NUM+i+1] != NULL; i++){
-		first_set = entry_find(entry_head, argv[COMMAND_KEY_NUM+i]);
-		
-		
-		// check if entry exists:
-		if(first_set == NULL) {
-			printf("no such key\n");
-			return;
-		}
+	// first_set = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
+	// second_set = entry_find(entry_head, argv[COMMAND_KEY_NUM+1])
+	// if(first_set == NULL && second_set == NULL){
+		// printf("no such key\n");
+	// }
+	
+	// loop over all argv[]
+	// load up object arrays
+	// send to function
+	// set function return to first_set
+	// free memory! :D
+	// repeat
+	
+	
+	
 
-		// only run this for the first two...
-		for(int c=0; c < first_entry->length; c++){
-			second_set = entry_find(entry_head, argv[COMMAND_KEY_NUM+i+1]);
-			// loop over elements until end of first entry.  
-			// If the elements do not overlap, it won't be in first_set.
-			result = entry_searchcmp(first_entry, second_entry, first_entry->values[i])
-			// check return value
-			if(result == NULL){
-				continue;
-			}else{
-				// add to list
-				list[index] = result;
-				index++;
-				list = (int *)realloc(list, (index+1)*sizeof(int));
-			}
-		}
-		// remove duplicates by sorting entries and uniq
-		qsort(list, index, sizeof(int), sortcmp);
-		index = uniq(list, index);
-		
-		// compare values in list against latest scanned entry
-		for(int c=0; c < index; c++){
-			if(entry_search(second_entry, list[c]) == NULL){
-				// remove value from list by shifting everything down, then realloc:
-				// shift all values left by one slot.
-				for(int i = j; i < index-1; i++) list[i] = list[i+1];
-				
-				// resize array
-				list = realloc(list, (index-1)*sizeof(int));
-				
-				// update length
-				index = index-1;
-			}
-		}
-		// set first set to second...
-		second_set = first_set;
-	}
-
-	printf("[");
-	// ... in the accepted format
-	for(int i = 0; i < index; i++){
-		if(i == index-1){
-			printf("%d", list[i]);
-		}else{
-			printf("%d ", list[i]);
-		}
-	}
-	printf("]\n");
+	// printf("[");
+	// // ... in the accepted format
+	// for(int i = 0; i < index; i++){
+		// if(i == index-1){
+			// printf("%d", list[i]);
+		// }else{
+			// printf("%d ", list[i]);
+		// }
+	// }
+	// printf("]\n");
 };
 
 void command_union(){
@@ -688,6 +657,8 @@ void command_union(){
 	qsort(list, index, sizeof(int), sortcmp);
 	
 	index = uniq(list, index);
+	
+	list = realloc(list, index*sizeof(int));
 
 	// output the list
 	printf("[");
@@ -700,6 +671,9 @@ void command_union(){
 		}
 	}
 	printf("]\n");
+	
+	// free list;
+	free(list);
 };
 
 void command_listKeys(){
@@ -770,29 +744,52 @@ void command_listSnapshots(){
   *	Description: 	Searches given entry for a value
   *	Return:			value if found, NULL if not found
   */
-int entry_searchcmp(entry* first, entry* second, int search){
-	int isInFirst = 0;
-	int isInSecond = 0;
-	for(int i = 0; i < first->length; i++){
-		if(first->values[i] == search) isInFirst = 1;
-	}
+// int entry_searchcmp(entry* first, entry* second, int search){
+	// int isInFirst = 0;
+	// int isInSecond = 0;
+	// for(int i = 0; i < first->length; i++){
+		// if(first->values[i] == search) isInFirst = 1;
+	// }
 	
-	if(isInFirst == 0) return NULL;
+	// if(isInFirst == 0) return NULL;
 	
-	for(int i = 0; i < second->length; i++){
-		if(second->values[i] == search) isInSecond = 1;
-	}
+	// for(int i = 0; i < second->length; i++){
+		// if(second->values[i] == search) isInSecond = 1;
+	// }
 	
-	if(isInFirst && isInSecond) return value;
-	else return NULL;
-}
+	// if(isInFirst && isInSecond) return value;
+	// else return NULL;
+// }
 
-int entry_search(entry* first, int search){
-	for(int i = 0; i < first->length; i++){
-		if(first->values[i] == search) return value;
-	}
-	return NULL;
-}
+// int entry_search(entry* first, int search){
+	// for(int i = 0; i < first->length; i++){
+		// if(first->values[i] == search) return value;
+	// }
+	// return NULL;
+// }
+
+// array* listcmp(array* first, array* second){
+	// // returns common elements.
+	// array* object = malloc(sizeof(array));
+	// int * list = malloc(1*sizeof(int));
+	// int term;
+	// int index = 0;
+	// for(int j = 0; j < first->length; j++){
+		// term = first[j];
+		// for(int i = 0; i < second->length; i++){
+			// if(second[i] == term){
+				// // is in both...
+				// list[index] = term;
+				// index++;
+				// list = (int *)realloc(list, (index+1)*sizeof(int));
+				// break;
+			// }
+		// }
+	// }
+	// object->values = list;
+	// object->length = index;
+	// return object;
+// }
  
  /*
   *	Description: 	Removes all adjacent duplicate values
@@ -806,10 +803,10 @@ int entry_search(entry* first, int search){
 			for(int i = j; i < length-1; i++) values[i] = values[i+1];
 			
 			// resize array
-			values = realloc(values, (length-1)*sizeof(int));
+			//values = realloc(values, (length-1)*sizeof(int));
 			
 			// update length
-			length = length-1;
+			length--;
 			
 			// check these again, since everything moved.
 			j--;
