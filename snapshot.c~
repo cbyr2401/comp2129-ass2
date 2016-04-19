@@ -21,7 +21,7 @@
 #define COMMAND_ID_NUM 1
 #define COMMAND_VALUES_INITAL 2
 
-#define DEBUG 1
+#define DEBUG 0
 
 entry* entry_head = NULL;
 entry* entry_tail = NULL;
@@ -36,7 +36,6 @@ int next_snapshot_id = 1;
 void clean_argv();
 int sortcmp(const void * a, const void * b);
 int uniq(int* values, int length);
-array* listcmp(array* first, array* second);
 
 entry* entry_create();
 void entry_update(entry* node);
@@ -51,7 +50,6 @@ entry* entry_copy(entry* master);
 entry* entry_listCopy(entry* head);
 
 void snapshot_append(snapshot* node);
-void snapshot_push(snapshot* node);
 void snapshot_remove(snapshot* node);
 void snapshot_removeAll(snapshot* head);
 snapshot* snapshot_find(snapshot* head, int id);
@@ -405,16 +403,14 @@ void command_rollback(){
 		entry_head = entry_listCopy(n->entries);
 		
 		// remove all snapshots after current <id>:
-		snapshot* current = n->prev;
-		snapshot* previous = NULL;
+		snapshot* current = n->next;
+		snapshot* next = NULL;
 		
 		while(current != NULL){
-			previous = current->prev;
+			next = current->next;
 			snapshot_remove(current);
-			current = previous;
+			current = next;
 		}
-		
-		snapshot_head = n;
 		
 		// output
 		printf("ok\n");
@@ -450,7 +446,7 @@ void command_snapshot(){
 	snap->entries = entry_listCopy(entry_head);
 	
 	// add new snapshot to linked-list:
-	snapshot_push(snap);
+	snapshot_append(snap);
 	
 	// output snapshot <id>
 	printf("saved as snapshot %d\n", next_snapshot_id);
@@ -601,13 +597,11 @@ void command_diff(){
 };
 
 void command_inter(){
-	int * list1 = malloc(1*sizeof(int));
-	int * list2 = malloc(1*sizeof(int));
-	entry* first_set;
-	entry* second_set;
-	array* arr1 = malloc(sizeof(array));
-	array* arr2 = malloc(sizeof(array));
-	array* rtn;
+	// int * list = malloc(1*sizeof(int));
+	// entry* first_set;
+	// entry* second_set;
+	// array* first_arr;
+	// array* second_arr;
 	
 	// first_set = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
 	// second_set = entry_find(entry_head, argv[COMMAND_KEY_NUM+1])
@@ -616,87 +610,25 @@ void command_inter(){
 	// }
 	
 	// loop over all argv[]
-	int position = 0;
-	while(argv[COMMAND_KEY_NUM+position+1] != NULL){
-		if(position == 0){
-			first_set = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
-		}
-		
-		second_set = entry_find(entry_head, argv[COMMAND_KEY_NUM+position+1]);
-		
-		if(first_set == NULL || second_set == NULL){
-			printf("no such key\n");
-			return;
-		}else{
-			// load up arrays
-			
-			if(position == 0){
-				// initial run, there is not list...so load up from entry
-				list1 = realloc(list1, first_set->length*sizeof(int));
-				memcpy(list1, first_set->values, first_set->length*sizeof(int));
-				arr1->values = list1;
-				arr1->length = first_set->length;
-				// to skip over one (since we don't need to compare the second again...)
-				//position++;
-			}else{
-				// continue using previous list...	
-				
-			}
-
-			list2 = realloc(list2, second_set->length*sizeof(int));
-			memcpy(list2, second_set->values, second_set->length*sizeof(int));
-			arr2->values = list2;
-			arr2->length = second_set->length;
-			
-			// sort and uniq
-			qsort(arr1->values, arr1->length, sizeof(int), sortcmp);
-			arr1->length = uniq(arr1->values, arr1->length);
-			arr1->values = realloc(arr1->values, arr1->length*sizeof(int));
-			
-			qsort(arr2->values, arr2->length, sizeof(int), sortcmp);
-			arr2->length = uniq(arr2->values, arr2->length);
-			arr2->values = realloc(arr2->values, arr2->length*sizeof(int));
-			
-			// send to function
-			rtn = listcmp(arr1, arr2);
-			
-			// set arr1 to rtn
-			memcpy(arr1->values, rtn->values, rtn->length*sizeof(int));
-			arr1->length = rtn->length;
-			
-			// free return
-			free(rtn->values);
-			
-			
-			// increment position
-			position++;
-		}
-	}
-	
+	// load up object arrays
 	// send to function
 	// set function return to first_set
 	// free memory! :D
 	// repeat
+	
+	
+	
 
-	printf("[");
-	// ... in the accepted format
-	for(int i = 0; i < arr1->length; i++){
-		if(i == arr1->length-1){
-			printf("%d", arr1->values[i]);
-		}else{
-			printf("%d ", arr1->values[i]);
-		}
-	}
-	printf("]\n");
-	
-	
-	// free structs (no longer needed)
-	free(arr1->values);
-	free(arr2->values);
-	free(arr1);
-	free(arr2);
-	//free(list1);
-	//free(list2);
+	// printf("[");
+	// // ... in the accepted format
+	// for(int i = 0; i < index; i++){
+		// if(i == index-1){
+			// printf("%d", list[i]);
+		// }else{
+			// printf("%d ", list[i]);
+		// }
+	// }
+	// printf("]\n");
 };
 
 void command_union(){
@@ -836,32 +768,28 @@ void command_listSnapshots(){
 	// return NULL;
 // }
 
-array* listcmp(array* first, array* second){
-	// returns common elements.
-	array* object = malloc(sizeof(array));
-	int * list = malloc(1*sizeof(int));
-	int term;
-	int index = 0;
-	
-	for(int j = 0; j < first->length; j++){
-		term = first->values[j];
-		
-		for(int i = 0; i < second->length; i++){
-			if(second->values[i] == term){
-				// is in both...
-				list[index] = term;
-				index++;
-				list = (int *)realloc(list, (index+1)*sizeof(int));
-				break;
-			}
-		}
-	}
-	
-	//for(int i = 0; i < index; i++) printf("line 860: %d", list[i]);
-	object->values = list;
-	object->length = index;
-	return object;
-}
+// array* listcmp(array* first, array* second){
+	// // returns common elements.
+	// array* object = malloc(sizeof(array));
+	// int * list = malloc(1*sizeof(int));
+	// int term;
+	// int index = 0;
+	// for(int j = 0; j < first->length; j++){
+		// term = first[j];
+		// for(int i = 0; i < second->length; i++){
+			// if(second[i] == term){
+				// // is in both...
+				// list[index] = term;
+				// index++;
+				// list = (int *)realloc(list, (index+1)*sizeof(int));
+				// break;
+			// }
+		// }
+	// }
+	// object->values = list;
+	// object->length = index;
+	// return object;
+// }
  
  /*
   *	Description: 	Removes all adjacent duplicate values
@@ -917,9 +845,10 @@ entry* entry_create(void){
 		// multiple items:
 		length = 0;
 
-		for(; argv[COMMAND_VALUES_INITAL+length] != NULL; length++){
+		for(; argv[length+2] != NULL; length++){
 			list = realloc(list, (length+1)*sizeof(int));
-			list[length] = atoi(argv[COMMAND_VALUES_INITAL+length]);
+			list[length] = atoi(argv[length+2]);
+			//sscanf(argv[length+2], "%d", &list[length]);
 		}
 
 	}
@@ -949,9 +878,9 @@ void entry_update(entry* n){
 	int* list = (int *)malloc(length * sizeof(int));
 	free(n->values);
 	
-	for(; argv[COMMAND_VALUES_INITAL+length] != NULL; length++){
-			list = realloc(list, (length+1)*sizeof(int));
-			list[length] = atoi(argv[COMMAND_VALUES_INITAL+length]);
+	for(; argv[length+2] != NULL; length++){
+			list = realloc(list, length+1);
+			sscanf(argv[length+2], "%d", &list[length]);
 	}
 	// update length:
 	n->length = length;
@@ -1221,29 +1150,6 @@ void snapshot_append(snapshot* n){
 		snapshot_tail = n;
 	}	
 }
-
-/*
- *	Description: 	Adds provided snapshot to beginning of linked-list (UNSAFE).
- *	Return: 		none.
- */
-void snapshot_push(snapshot* n){
-	
-	if(snapshot_head == NULL){
-		// first element in list.
-		snapshot_head = n;
-		snapshot_tail = n;
-		n->next = NULL;
-		n->prev = NULL;
-	}else{	
-		// create link
-		snapshot_head->prev = n;
-		n->next = snapshot_head;
-		n->prev = NULL;
-		// for rapid fire adding of elements:
-		snapshot_head = n;
-	}	
-}
-
 
 /*
  *	Description: 	Removes provided snapshot from linked-list (UNSAFE).
