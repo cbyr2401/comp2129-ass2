@@ -666,6 +666,7 @@ void command_inter(){
 			
 			// free return
 			free(rtn->values);
+			free(rtn);
 			
 			
 			// increment position
