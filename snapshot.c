@@ -21,7 +21,7 @@
 #define COMMAND_ID_NUM 1
 #define COMMAND_VALUES_INITAL 2
 
-#define DEBUG 1
+#define DEBUG 0
 
 entry* entry_head = NULL;
 entry* entry_tail = NULL;
@@ -36,7 +36,7 @@ int next_snapshot_id = 1;
 void clean_argv();
 int sortcmp(const void * a, const void * b);
 int uniq(int* values, int length);
-array* listcmp(array* first, array* second);
+array* intersection(array* first, array* second);
 
 entry* entry_create();
 void entry_update(entry* node);
@@ -597,6 +597,7 @@ void command_sort(){
 };
 
 void command_diff(){
+	// union minus intersection
 	
 };
 
@@ -632,6 +633,10 @@ void command_inter(){
 				arr1->length = first_set->length;
 				// to skip over one (since we don't need to compare the second again...)
 				//position++;
+				// sort and uniq
+				qsort(arr1->values, arr1->length, sizeof(int), sortcmp);
+				arr1->length = uniq(arr1->values, arr1->length);
+				arr1->values = realloc(arr1->values, arr1->length*sizeof(int));
 			}else{
 				// continue using previous list...	
 				
@@ -643,16 +648,12 @@ void command_inter(){
 			arr2->length = second_set->length;
 			
 			// sort and uniq
-			qsort(arr1->values, arr1->length, sizeof(int), sortcmp);
-			arr1->length = uniq(arr1->values, arr1->length);
-			arr1->values = realloc(arr1->values, arr1->length*sizeof(int));
-			
 			qsort(arr2->values, arr2->length, sizeof(int), sortcmp);
 			arr2->length = uniq(arr2->values, arr2->length);
 			arr2->values = realloc(arr2->values, arr2->length*sizeof(int));
 			
 			// send to function
-			rtn = listcmp(arr1, arr2);
+			rtn = intersection(arr1, arr2);
 			
 			// set arr1 to rtn
 			memcpy(arr1->values, rtn->values, rtn->length*sizeof(int));
@@ -824,7 +825,7 @@ void command_listSnapshots(){
 	// return NULL;
 // }
 
-array* listcmp(array* first, array* second){
+array* intersection(array* first, array* second){
 	// returns common elements.
 	array* object = malloc(sizeof(array));
 	int * list = malloc(1*sizeof(int));
@@ -844,7 +845,10 @@ array* listcmp(array* first, array* second){
 			}
 		}
 	}
-	
+	// clean data
+	qsort(list, index, sizeof(int), sortcmp);
+	index = uniq(list,index);
+	list = realloc(list, index*sizeof(int));
 	//for(int i = 0; i < index; i++) printf("line 860: %d", list[i]);
 	object->values = list;
 	object->length = index;
