@@ -609,12 +609,6 @@ void command_inter(){
 	array* arr2 = malloc(sizeof(array));
 	array* rtn;
 	
-	// first_set = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
-	// second_set = entry_find(entry_head, argv[COMMAND_KEY_NUM+1])
-	// if(first_set == NULL && second_set == NULL){
-		// printf("no such key\n");
-	// }
-	
 	// loop over all argv[]
 	int position = 0;
 	while(argv[COMMAND_KEY_NUM+position+1] != NULL){
@@ -673,11 +667,6 @@ void command_inter(){
 			position++;
 		}
 	}
-	
-	// send to function
-	// set function return to first_set
-	// free memory! :D
-	// repeat
 
 	printf("[");
 	// ... in the accepted format
@@ -696,8 +685,6 @@ void command_inter(){
 	free(arr2->values);
 	free(arr1);
 	free(arr2);
-	//free(list1);
-	//free(list2);
 };
 
 void command_union(){
