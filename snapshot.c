@@ -945,21 +945,23 @@ array* intersection(array* first, array* second){
 }
 
 array* difference(array* first, array* second){
+	// data is sorted and unique
 	// returns common elements.
 	array* object = malloc(sizeof(array));
-	int * list = malloc(1*sizeof(int));
+	int * list = malloc(first->length*sizeof(int));
+	memcpy(list, first->values, first->length*sizeof(int));
 	int term;
-	int index = 0;
+	int index = first->length;
 	
-	for(int j = 0; j < first->length; j++){
+	for(int j = 0; j < second->length; j++){
 		term = second->values[j];
 		
 		for(int i = 0; i < second->length; i++){
-			if(first->values[i] != term){
-				// is in both...
-				list[index] = first->values[i];
-				index++;
-				list = (int *)realloc(list, (index+1)*sizeof(int));
+			if(list[i] == term){
+				// REMOVE FROM LIST by shifting left
+				// shift all values left by one slot.
+				for(int c = i; c < index-1; c++) list[c] = list[c+1];
+				index--;
 				break;
 			}
 		}
