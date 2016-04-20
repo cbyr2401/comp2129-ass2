@@ -16,7 +16,7 @@ typedef struct array array;
 // };
 
 struct array {
-	int length;
+	int size;
 	int * values;
 };
 

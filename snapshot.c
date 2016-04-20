@@ -36,9 +36,12 @@ int next_snapshot_id = 1;
 void clean_argv();
 int sortcmp(const void * a, const void * b);
 int uniq(int* values, int length);
-array* intersection(array* first, array* second);
-array* difference(array* first, array* second);
-	
+array* intersection(const array* first, const array* second);
+array* difference(const array* first, const array* second);
+array* create_arraySet(const int* items, const int length);
+void display_set(const int * list, const int length);
+
+
 entry* entry_create();
 void entry_update(entry* node);
 void entry_append(entry* node);
@@ -601,180 +604,137 @@ void command_diff(){
 	// 1) symmetric difference: union minus intersection
 	// 2) Postgres: binary left groups
 	// 3) set difference (correct): binary right groupings
-	int * list1 = malloc(1*sizeof(int));
-	int * list2 = malloc(1*sizeof(int));
-	entry* first_set;
-	entry* second_set;
-	array* arr1 = malloc(sizeof(array));
-	array* arr2 = malloc(sizeof(array));
+	entry* entry1;
+	entry* entry2;
+	array* set1;
+	array* set2;
 	array* rtn;
-		
+	
+	if(argv[COMMAND_KEY_NUM] == NULL || argv[COMMAND_KEY_NUM+1] == NULL){
+		printf("no such key\n");
+		return;
+	}
+	
 	// loop over all argv[]
-	int position = 0;
-	while(argv[COMMAND_KEY_NUM+position+1] != NULL){
-		if(position == 0){
-			first_set = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
+	int position = 1;
+	while(argv[COMMAND_KEY_NUM+position] != NULL){
+		if(position == 1){
+			entry1 = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
 		}
 		
-		second_set = entry_find(entry_head, argv[COMMAND_KEY_NUM+position+1]);
+		entry2 = entry_find(entry_head, argv[COMMAND_KEY_NUM+position]);
 		
-		if(first_set == NULL || second_set == NULL){
+		if(entry1 == NULL || entry2 == NULL){
 			printf("no such key\n");
+			if(position>1){
+				free(set1->values);
+				free(set1);
+			}
 			return;
 		}else{
 			// load up arrays
 			
-			if(position == 0){
+			if(position == 1){
 				// initial run, there is not list...so load up from entry
-				list1 = realloc(list1, first_set->length*sizeof(int));
-				memcpy(list1, first_set->values, first_set->length*sizeof(int));
-				arr1->values = list1;
-				arr1->length = first_set->length;
-				// to skip over one (since we don't need to compare the second again...)
-				//position++;
-				// sort and uniq
-				qsort(arr1->values, arr1->length, sizeof(int), sortcmp);
-				arr1->length = uniq(arr1->values, arr1->length);
-				arr1->values = realloc(arr1->values, arr1->length*sizeof(int));
+				set1 = create_arraySet(entry1->values, entry1->length);
 			}else{
 				// continue using previous list...	
 				
 			}
-			free(list2);
-			list2 = malloc(second_set->length*sizeof(int));
 			
-			memcpy(list2, second_set->values, second_set->length*sizeof(int));
-			arr2->values = list2;
-			arr2->length = second_set->length;
-			
-			// sort and uniq
-			qsort(arr2->values, arr2->length, sizeof(int), sortcmp);
-			arr2->length = uniq(arr2->values, arr2->length);
-			arr2->values = realloc(arr2->values, arr2->length*sizeof(int));
-			
+			set2 = create_arraySet(entry2->values, entry2->length);			
 			// send to function
-			rtn = difference(arr1, arr2);
+			rtn = difference(set1, set2);
 			
-			// set arr1 to rtn
-			memcpy(arr1->values, rtn->values, rtn->length*sizeof(int));
-			arr1->length = rtn->length;
+			// free set2
+			free(set2->values);
+			free(set2);
+			//free(set1->values);
+			
+			// put all values into set1 for next cycle
+			memcpy(set1->values, rtn->values, rtn->size*sizeof(int));
+			set1->size = rtn->size;
 			
 			// free return
 			free(rtn->values);
 			free(rtn);
-			
 			
 			// increment position
 			position++;
 		}
 	}
 
-	printf("[");
-	// ... in the accepted format
-	for(int i = 0; i < arr1->length; i++){
-		if(i == arr1->length-1){
-			printf("%d", arr1->values[i]);
-		}else{
-			printf("%d ", arr1->values[i]);
-		}
-	}
-	printf("]\n");
-	
+	display_set(set1->values, set1->size);
 	
 	// free structs (no longer needed)
-	free(arr1->values);
-	free(arr2->values);
-	free(arr1);
-	free(arr2);
+	free(set1->values);
+	free(set1);
 };
 
 void command_inter(){
-	int * list1 = malloc(1*sizeof(int));
-	int * list2 = malloc(1*sizeof(int));
-	entry* first_set;
-	entry* second_set;
-	array* arr1 = malloc(sizeof(array));
-	array* arr2 = malloc(sizeof(array));
+	entry* entry1;
+	entry* entry2;
+	array* set1;
+	array* set2;
 	array* rtn;
 	
+	if(argv[COMMAND_KEY_NUM] == NULL || argv[COMMAND_KEY_NUM+1] == NULL){
+		printf("no such key\n");
+		return;
+	}
+	
 	// loop over all argv[]
-	int position = 0;
-	while(argv[COMMAND_KEY_NUM+position+1] != NULL){
-		if(position == 0){
-			first_set = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
+	int position = 1;
+	while(argv[COMMAND_KEY_NUM+position] != NULL){
+		if(position == 1){
+			entry1 = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
 		}
 		
-		second_set = entry_find(entry_head, argv[COMMAND_KEY_NUM+position+1]);
+		entry2 = entry_find(entry_head, argv[COMMAND_KEY_NUM+position]);
 		
-		if(first_set == NULL || second_set == NULL){
+		if(entry1 == NULL || entry2 == NULL){
 			printf("no such key\n");
+			if(position>1){
+				free(set1->values);
+				free(set1);
+			}
 			return;
 		}else{
 			// load up arrays
 			
-			if(position == 0){
+			if(position == 1){
 				// initial run, there is not list...so load up from entry
-				list1 = realloc(list1, first_set->length*sizeof(int));
-				memcpy(list1, first_set->values, first_set->length*sizeof(int));
-				arr1->values = list1;
-				arr1->length = first_set->length;
-				// to skip over one (since we don't need to compare the second again...)
-				//position++;
-				// sort and uniq
-				qsort(arr1->values, arr1->length, sizeof(int), sortcmp);
-				arr1->length = uniq(arr1->values, arr1->length);
-				arr1->values = realloc(arr1->values, arr1->length*sizeof(int));
+				set1 = create_arraySet(entry1->values, entry1->length);
 			}else{
 				// continue using previous list...	
 				
 			}
-			
-			free(list2);
-			list2 = (int *)malloc((second_set->length)*sizeof(int));	
-
-			memcpy(list2, second_set->values, second_set->length*sizeof(int));
-			arr2->values = list2;
-			arr2->length = second_set->length;
-			
-			// sort and uniq
-			qsort(arr2->values, arr2->length, sizeof(int), sortcmp);
-			arr2->length = uniq(arr2->values, arr2->length);
-			arr2->values = realloc(arr2->values, arr2->length*sizeof(int));
-			
+			set2 = create_arraySet(entry2->values, entry2->length);			
 			// send to function
-			rtn = intersection(arr1, arr2);
+			rtn = intersection(set1, set2);
 			
-			// set arr1 to rtn
-			memcpy(arr1->values, rtn->values, rtn->length*sizeof(int));
-			arr1->length = rtn->length;
+			// free set2
+			free(set2->values);
+			free(set2);
+			
+			// put all values into set1 for next cycle
+			memcpy(set1->values, rtn->values, rtn->size*sizeof(int));
+			set1->size = rtn->size;
 			
 			// free return
 			free(rtn->values);
 			free(rtn);
-			
 			
 			// increment position
 			position++;
 		}
 	}
 
-	printf("[");
-	// ... in the accepted format
-	for(int i = 0; i < arr1->length; i++){
-		if(i == arr1->length-1){
-			printf("%d", arr1->values[i]);
-		}else{
-			printf("%d ", arr1->values[i]);
-		}
-	}
-	printf("]\n");
-	
+	display_set(set1->values, set1->size);
 	
 	// free structs (no longer needed)
-	free(arr1->values);
-	free(arr2->values);
-	free(arr1);
-	free(arr2);
+	free(set1->values);
+	free(set1);
 };
 
 void command_union(){
@@ -789,6 +749,7 @@ void command_union(){
 		// check if entry exists:
 		if(n == NULL) {
 			printf("no such key\n");
+			free(list);
 			return;
 		}
 		// add items to list:
@@ -805,18 +766,9 @@ void command_union(){
 	index = uniq(list, index);
 	
 	list = realloc(list, index*sizeof(int));
-
-	// output the list
-	printf("[");
-	// ... in the accepted format
-	for(int i = 0; i < index; i++){
-		if(i == index-1){
-			printf("%d", list[i]);
-		}else{
-			printf("%d ", list[i]);
-		}
-	}
-	printf("]\n");
+	
+	// output
+	display_set(list, index);
 	
 	// free list;
 	free(list);
@@ -886,77 +838,45 @@ void command_listSnapshots(){
  *	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
- /*
-  *	Description: 	Searches given entry for a value
-  *	Return:			value if found, NULL if not found
-  */
-// int entry_searchcmp(entry* first, entry* second, int search){
-	// int isInFirst = 0;
-	// int isInSecond = 0;
-	// for(int i = 0; i < first->length; i++){
-		// if(first->values[i] == search) isInFirst = 1;
-	// }
-	
-	// if(isInFirst == 0) return NULL;
-	
-	// for(int i = 0; i < second->length; i++){
-		// if(second->values[i] == search) isInSecond = 1;
-	// }
-	
-	// if(isInFirst && isInSecond) return value;
-	// else return NULL;
-// }
-
-// int entry_search(entry* first, int search){
-	// for(int i = 0; i < first->length; i++){
-		// if(first->values[i] == search) return value;
-	// }
-	// return NULL;
-// }
-
-array* intersection(array* first, array* second){
+array* intersection(const array* first, const array* second){
 	// returns common elements.
-	array* object = malloc(sizeof(array));
+	array* object;
 	int * list = malloc(1*sizeof(int));
 	int term;
 	int index = 0;
 	
-	for(int j = 0; j < first->length; j++){
+	for(int j = 0; j < first->size; j++){
 		term = first->values[j];
 		
-		for(int i = 0; i < second->length; i++){
+		for(int i = 0; i < second->size; i++){
 			if(second->values[i] == term){
 				// is in both...
+				list = (int *)realloc(list, (index+1)*sizeof(int));
 				list[index] = term;
 				index++;
-				list = (int *)realloc(list, (index+1)*sizeof(int));
 				break;
 			}
 		}
 	}
-	// clean data
-	qsort(list, index, sizeof(int), sortcmp);
-	index = uniq(list,index);
-	list = realloc(list, index*sizeof(int));
-	//for(int i = 0; i < index; i++) printf("line 860: %d", list[i]);
-	object->values = list;
-	object->length = index;
+	// create array
+	object = create_arraySet(list, index);
+	free(list);
 	return object;
 }
 
-array* difference(array* first, array* second){
+array* difference(const array* first, const array* second){
 	// data is sorted and unique
 	// returns common elements.
-	array* object = malloc(sizeof(array));
-	int * list = malloc(first->length*sizeof(int));
-	memcpy(list, first->values, first->length*sizeof(int));
+	array* object;
+	int * list = malloc(first->size*sizeof(int));
+	memcpy(list, first->values, first->size*sizeof(int));
 	int term;
-	int index = first->length;
+	int index = first->size;
 	
-	for(int j = 0; j < second->length; j++){
+	for(int j = 0; j < second->size; j++){
 		term = second->values[j];
 		
-		for(int i = 0; i < second->length; i++){
+		for(int i = 0; i < index; i++){
 			if(list[i] == term){
 				// REMOVE FROM LIST by shifting left
 				// shift all values left by one slot.
@@ -966,14 +886,47 @@ array* difference(array* first, array* second){
 			}
 		}
 	}
-	// clean data
-	qsort(list, index, sizeof(int), sortcmp);
-	index = uniq(list,index);
-	list = realloc(list, index*sizeof(int));
-	//for(int i = 0; i < index; i++) printf("line 860: %d", list[i]);
-	object->values = list;
-	object->length = index;
+	// create array
+	object = create_arraySet(list, index);
+	free(list);
 	return object;
+}
+
+ /*
+  *	Description: 	Lists all values in given array
+  *	Return:			none.
+  */
+void display_set(const int * list, const int length){
+	printf("[");
+	// ... in the accepted format
+	for(int i = 0; i < length; i++){
+		if(i == length-1){
+			printf("%d", list[i]);
+		}else{
+			printf("%d ", list[i]);
+		}
+	}
+	printf("]\n");
+}
+
+ /*
+  *	Description: 	Creates an array struct from given list (duplicates)
+  *	Return:			Pointer to struct
+  */
+array* create_arraySet(const int* items, const int length){
+	// allocate memory to array
+	array* set = malloc(sizeof(array));
+	int * list = malloc(length*sizeof(int));
+	
+	// copy values to list...
+	memcpy(list, items, length*sizeof(int));
+	
+	// sort items and remove duplicates...
+	qsort(list, length, sizeof(int), sortcmp);
+	set->size = uniq(list, length);
+	list = realloc(list, set->size*sizeof(int));
+	set->values = list;
+	return set;
 }
  
  /*
@@ -1130,7 +1083,7 @@ void entry_push(entry* n){
 entry* entry_find(entry* head, char* key){
 	// search the list until the end:
 	entry* current = head;
-	if(head == NULL) return NULL;
+	if(head == NULL || key == NULL) return NULL;
 	while(current->next != NULL && strcmp(current->key, key) != 0 ){
 		current = current->next;
 	}
