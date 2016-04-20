@@ -4,16 +4,15 @@
 #define MAX_KEY 16
 #define MAX_LINE 1024
 #define MAX_COMMAND 32
+#define NUM_COMMANDS 28
+#define COMMAND_ARG_NUM 0
+#define COMMAND_KEY_NUM 1
+#define COMMAND_ID_NUM 1
+#define COMMAND_VALUES_INITAL 2
 
 typedef struct entry entry;
 typedef struct snapshot snapshot;
 typedef struct array array;
-// typedef struct node node;
-
-// struct node {
-	// void * data; 
-	// node * next; 
-// };
 
 struct array {
 	int size;
@@ -84,6 +83,35 @@ const char* COMMAND_LIST[] = {
 	"DIFF", "INTER", "UNION",
 	"LIST KEYS", "LIST ENTRIES", "LIST SNAPSHOTS"
 };
+
+// Declare function foot prints
+// Utilities for sorting, various helper methods
+void clean_argv();
+void display_set(const int* list, const int length);
+int sortcmp(const void* a, const void* b);
+int uniq(int* list, int length);
+array* intersection(const array* first, const array* second);
+array* difference(const array* first, const array* second);
+array* create_arraySet(const int* list, const int length);
+
+// Functions for C.R.U.D for Entries
+entry* entry_create();
+entry* entry_find(entry* head, char * key);
+entry* entry_free(entry* node);
+entry* entry_copy(entry* master);
+entry* entry_listCopy(entry* head);
+void entry_update(entry* node);
+void entry_push(entry* node);
+void entry_remove(entry* node);
+void entry_removeAll(entry* head);
+void entry_freeList(entry* head);
+
+// Functions for C.R.U.D for Snapshots
+void snapshot_push(snapshot* node);
+void snapshot_remove(snapshot* node);
+void snapshot_removeAll(snapshot* head);
+snapshot* snapshot_find(snapshot* head, int id);
+
 
 /*
 	Function Declarations

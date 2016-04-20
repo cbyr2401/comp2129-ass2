@@ -7,21 +7,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include <strings.h>
-#include <stdbool.h>
 #include <ctype.h>  // toupper()
 #include <stddef.h>
 
 #include "snapshot.h"
 
-#define ARRLEN(x)  (sizeof(x) / sizeof((x)[0]))
-#define NUM_COMMANDS 28
-#define COMMAND_ARG_NUM 0
-#define COMMAND_KEY_NUM 1
-#define COMMAND_ID_NUM 1
-#define COMMAND_VALUES_INITAL 2
-
-#define DEBUG 1
+#define DEBUG 0
 
 entry* entry_head = NULL;
 entry* entry_tail = NULL;
@@ -32,36 +23,7 @@ snapshot* snapshot_tail = NULL;
 char * argv[MAX_COMMAND];
 int next_snapshot_id = 1;
 
-// Declare function foot prints (TODO: move to header file after refractoring)
-void clean_argv();
-int sortcmp(const void * a, const void * b);
-int uniq(int* values, int length);
-array* intersection(const array* first, const array* second);
-array* difference(const array* first, const array* second);
-array* create_arraySet(const int* items, const int length);
-void display_set(const int * list, const int length);
-
-
-entry* entry_create();
-void entry_update(entry* node);
-void entry_append(entry* node);
-void entry_push(entry* node);
-entry* entry_find(entry* head, char * key);
-void entry_remove(entry* node);
-void entry_removeAll(entry* head);
-entry* entry_free(entry* node);
-void entry_freeList(entry* head);
-entry* entry_copy(entry* master);
-entry* entry_listCopy(entry* head);
-
-void snapshot_append(snapshot* node);
-void snapshot_push(snapshot* node);
-void snapshot_remove(snapshot* node);
-void snapshot_removeAll(snapshot* head);
-snapshot* snapshot_find(snapshot* head, int id);
-
-
-
+// Array of Pointers to Functions for clean access to each one from command line
 void (*ptrcommand[NUM_COMMANDS])() = {
 	command_bye, command_help, command_get,
 	command_del, command_purge, command_set,
@@ -78,18 +40,19 @@ int main(void) {
 
 	char line[MAX_LINE];
 
-	while (true) {
+	while (1) {
+		// output "> " for commands to be inputted
 		if(DEBUG==0) printf("> ");
-    	
 
     	if (fgets(line, MAX_LINE, stdin) == NULL) {
-    	    //(*ptrc[0])();
+			// EOF
     	    return 0; 		
-    	}
-		else{
+    	}else{
+			// delcare some variables
 			char *word;
 			const char delim[2] = " ";
 			int nargs = 0;
+			
 			// clear the arguments array.
 			clean_argv();
 			
@@ -106,7 +69,7 @@ int main(void) {
 			}
 			
 			if(nargs < 1){
-				
+				// error checking... not part of this assessment task
 			}
 			// convert all characters for command to uppercase for search...
 			for(int c=0; c < strlen(argv[COMMAND_ARG_NUM]); c++) argv[COMMAND_ARG_NUM][c] = toupper(argv[0][c]);
@@ -124,10 +87,10 @@ int main(void) {
 				if(strcmp(argv[COMMAND_ARG_NUM],COMMAND_LIST[i])==0) (*ptrcommand[i])();
 			}
 			
+			// add newline
 			if(DEBUG==0) printf("\n");
 		}
   	}
-
 	return 0;
 }
 
@@ -136,7 +99,7 @@ int main(void) {
  *   FUNCTIONS CALLED DIRECTLY BY COMMAND LINE
  *	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *
- *	See HELP for what each function performs.
+ *	See HELP in "snapshot.h" for what each function performs.
  */
 void command_bye () {
 	// destroy database
@@ -602,7 +565,7 @@ void command_sort(){
 
 void command_diff(){
 	// 1) symmetric difference: union minus intersection
-	// 2) Postgres: binary left groups
+	// 2) Postgres: binary left groups  <<< This one...
 	// 3) set difference (correct): binary right groupings
 	entry* entry1;
 	entry* entry2;
@@ -649,7 +612,6 @@ void command_diff(){
 			// free set2
 			free(set2->values);
 			free(set2);
-			//free(set1->values);
 			
 			// put all values into set1 for next cycle
 			memcpy(set1->values, rtn->values, rtn->size*sizeof(int));
@@ -837,9 +799,66 @@ void command_listSnapshots(){
  *	HELPER FUNCTIONS FOR ACCESSING LISTS
  *	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
+/*
+ *	Description: 	Removes all elements in global argv (sets to NULL)
+ * 	Return:			none.
+ */
+void clean_argv(void){
+	for(int i = 0; i < MAX_COMMAND; i++) argv[i] = NULL;
+}
 
+/*
+ *	Description: 	Lists all values in given array
+ *	Return:			none.
+ */
+void display_set(const int * list, const int length){
+	printf("[");
+	// ... in the accepted format
+	for(int i = 0; i < length; i++){
+		if(i == length-1){
+			printf("%d", list[i]);
+		}else{
+			printf("%d ", list[i]);
+		}
+	}
+	printf("]\n");
+}
+
+/*
+ *	Description:	Compare function for qsort
+ *	Return:			difference between two ints
+ * 	Source:			http://www.tutorialspoint.com/c_standard_library/c_function_qsort.htm
+ */
+int sortcmp(const void * a, const void * b){
+	return ( *(int*)a - *(int*)b );
+}
+
+/*
+ *	Description: 	Removes all adjacent duplicate values
+ *	Return:			Pointer to list that was changed
+ */
+ int uniq(int* values, int length){
+	// check if element is same, side by side.
+	for(int j = 1; j < length; j++){
+		if(values[j] == values[j-1]){
+			// shift all values left by one slot.
+			for(int i = j; i < length-1; i++) values[i] = values[i+1];
+			
+			// update length
+			length--;
+			
+			// check these again, since everything moved.
+			j--;
+		}
+	}
+	return length;
+ }
+
+/*
+ *	Description:	Helper method for intersection.
+ *	Return:			Pointer to Array type with list and length of list
+ */
 array* intersection(const array* first, const array* second){
-	// returns common elements.
 	array* object;
 	int * list = malloc(1*sizeof(int));
 	int term;
@@ -864,9 +883,11 @@ array* intersection(const array* first, const array* second){
 	return object;
 }
 
+/*
+ *	Description:	Helper method for difference.
+ *	Return:			Pointer to Array type with list and length of list
+ */
 array* difference(const array* first, const array* second){
-	// data is sorted and unique
-	// returns common elements.
 	array* object;
 	int * list = malloc(first->size*sizeof(int));
 	memcpy(list, first->values, first->size*sizeof(int));
@@ -878,8 +899,8 @@ array* difference(const array* first, const array* second){
 		
 		for(int i = 0; i < index; i++){
 			if(list[i] == term){
+				// is in both...
 				// REMOVE FROM LIST by shifting left
-				// shift all values left by one slot.
 				for(int c = i; c < index-1; c++) list[c] = list[c+1];
 				index--;
 				break;
@@ -892,27 +913,10 @@ array* difference(const array* first, const array* second){
 	return object;
 }
 
- /*
-  *	Description: 	Lists all values in given array
-  *	Return:			none.
-  */
-void display_set(const int * list, const int length){
-	printf("[");
-	// ... in the accepted format
-	for(int i = 0; i < length; i++){
-		if(i == length-1){
-			printf("%d", list[i]);
-		}else{
-			printf("%d ", list[i]);
-		}
-	}
-	printf("]\n");
-}
-
- /*
-  *	Description: 	Creates an array struct from given list (duplicates)
-  *	Return:			Pointer to struct
-  */
+/*
+ *	Description: 	Creates an array struct from given list (duplicates)
+ *	Return:			Pointer to struct
+ */
 array* create_arraySet(const int* items, const int length){
 	// allocate memory to array
 	array* set = malloc(sizeof(array));
@@ -926,41 +930,11 @@ array* create_arraySet(const int* items, const int length){
 	set->size = uniq(list, length);
 	list = realloc(list, set->size*sizeof(int));
 	set->values = list;
+	
+	// return set
 	return set;
 }
  
- /*
-  *	Description: 	Removes all adjacent duplicate values
-  *	Return:			Pointer to list that was changed
-  */
- int uniq(int* values, int length){
-	// check if element is same, side by side.
-	for(int j = 1; j < length; j++){
-		if(values[j] == values[j-1]){
-			// shift all values left by one slot.
-			for(int i = j; i < length-1; i++) values[i] = values[i+1];
-			
-			// resize array
-			//values = realloc(values, (length-1)*sizeof(int));
-			
-			// update length
-			length--;
-			
-			// check these again, since everything moved.
-			j--;
-		}
-	}
-	return length;
- }
- 
-/*
- *	Description: 	Removes all elements in global argv (sets to NULL)
- * 	Return:			none.
- */
-void clean_argv(void){
-	for(int i = 0; i < ARRLEN(argv); i++) argv[i] = NULL;
-}
-
 /*
  *	Description: 	Creates a new entry.  Uses values stored in global argv, 
  *					 populated by command line.
@@ -1006,77 +980,6 @@ entry* entry_create(void){
 }
 
 /*
- *	Description: 	Changes values in provided entry.
- *					 NOTE: This method is unsafe.  Only use with SET.
- * 	Return:			none.
- */
-void entry_update(entry* n){
-	int length = 0;
-	int* list = (int *)malloc(length * sizeof(int));
-	free(n->values);
-	
-	for(; argv[COMMAND_VALUES_INITAL+length] != NULL; length++){
-			list = realloc(list, (length+1)*sizeof(int));
-			list[length] = atoi(argv[COMMAND_VALUES_INITAL+length]);
-	}
-	// update length:
-	n->length = length;
-	n->values = list;
-}
-
-/*
- *	Description: 	Adds provided entry to back of linked list (entry_head).
- *					 NOTE: This method is unsafe.
- *	Return:			none.
- */
-void entry_append(entry* n){
-	entry* current = entry_head;
-	if(current == NULL){
-		// first element in list.
-		entry_head = n;
-		entry_tail = n;
-		n->next = NULL;
-		n->prev = NULL;
-	}else{
-		// for rapid fire adding of elements:
-		current = entry_tail;
-		
-		// create link
-		current->next = n;
-		n->prev = current;
-		n->next = NULL;
-		// for rapid fire adding of elements:
-		entry_tail = n;
-	}	
-}
-
-/*
- *	Description: 	Adds provided entry to front of linked list (entry_head).
- *					 NOTE: This method is unsafe.
- *	Return:			none.
- */
-void entry_push(entry* n){
-	entry* current = entry_head;
-	if(current == NULL){
-		// first element in list.
-		entry_head = n;
-		entry_tail = n;
-		n->next = NULL;
-		n->prev = NULL;
-	}else{
-		// for rapid fire adding of elements:
-		current = entry_head;
-		
-		// create link
-		current->prev = n;
-		n->prev = NULL;
-		n->next = current;
-		// for rapid fire adding of elements:
-		entry_head = n;
-	}	
-}
-
-/*
  *	Description: 	Searches provided linked list for a entry given key.
  *	Return:			Pointer to located entry or NULL (not located).
  */
@@ -1089,77 +992,6 @@ entry* entry_find(entry* head, char* key){
 	}
 	if(strcmp(current->key, key) == 0) return current;
 	else return NULL;
-}
-
-/*
- *	Description: 	Searches provided linked list for a snapshot.
- *	Return:			Pointer to located snapshot or NULL (not located).
- */
-snapshot* snapshot_find(snapshot* head, int id){
-	// search the list until the end:
-	snapshot* current = head;
-	if(head == NULL) return NULL;
-	while(current->next != NULL && current->id != id ){
-		current = current->next;
-	}
-	if(current->id == id) return current;
-	else return NULL;
-}
-
-/*
- *	Description: 	Removes provided entry from linked list (entry_head).
- *					 NOTE: This method is unsafe.
- *	Return:			none.
- */
-void entry_remove(entry* n){
-	if(n->prev == NULL && n->next == NULL){
-		// only element in list
-		entry_head = NULL;
-		// free memory of values, then the struct
-		free(n->values);
-		free(n);
-	}else if(n->prev == NULL && n->next != NULL){
-		// we are dealing with the first element:
-		entry_head = n->next;
-		n->next->prev = NULL;
-		// free memory of values, then the struct
-		free(n->values);
-		free(n);
-	}else if(n->next == NULL && n->prev != NULL){
-		// we are dealing with the last element:
-		entry_tail = n->prev;
-		n->prev->next = NULL;
-		// free memory of values, then the struct
-		free(n->values);
-		free(n);
-	}else{
-		// rebuild link, with n removed.
-		n->next->prev = n->prev;
-		n->prev->next = n->next;
-		// free memory of values, then the struct
-		free(n->values);
-		free(n);
-	}
-}
-
-/*
- *	Description: 	Removes all entries from linked list (entry_head).
- *					 NOTE: This method is unsafe because it calls entry_remove()
- *	Return:			none.
- */
-void entry_removeAll(entry* head){
-	entry* current = head;
-	entry* next = NULL;
-	if(head == NULL){
-		// nothing to clean up :)
-	}else{
-		// free all memory from each individual entry:
-		while(current != NULL){
-			next = current->next;
-			entry_remove(current);
-			current = next;
-		}
-	}
 }
 
 /*
@@ -1191,17 +1023,6 @@ entry* entry_free(entry* n){
 	free(n);
 	// return next element
 	return next;
-}
-
-/*
- *	Description: 	free() all entries in provied linked-list from memory (SAFE).
- *	Return: 		none.
- */
-void entry_freeList(entry* n){
-	entry* current = n;
-	while(current != NULL){
-		current = entry_free(current);
-	}
 }
 
 /*
@@ -1264,28 +1085,114 @@ entry* entry_listCopy(entry* head){
 }
 
 /*
- *	Description: 	Adds provided snapshot to linked-list (UNSAFE).
- *	Return: 		none.
+ *	Description: 	Changes values in provided entry.
+ *					 NOTE: This method is unsafe.  Only use with SET.
+ * 	Return:			none.
  */
-void snapshot_append(snapshot* n){
-	snapshot* current = snapshot_head;
+void entry_update(entry* n){
+	int length = 0;
+	int* list = (int *)malloc(length * sizeof(int));
+	free(n->values);
+	
+	for(; argv[COMMAND_VALUES_INITAL+length] != NULL; length++){
+			list = realloc(list, (length+1)*sizeof(int));
+			list[length] = atoi(argv[COMMAND_VALUES_INITAL+length]);
+	}
+	// update length:
+	n->length = length;
+	n->values = list;
+}
+
+/*
+ *	Description: 	Adds provided entry to front of linked list (entry_head).
+ *					 NOTE: This method is unsafe.
+ *	Return:			none.
+ */
+void entry_push(entry* n){
+	entry* current = entry_head;
 	if(current == NULL){
 		// first element in list.
-		snapshot_head = n;
-		snapshot_tail = n;
+		entry_head = n;
+		entry_tail = n;
 		n->next = NULL;
 		n->prev = NULL;
 	}else{
 		// for rapid fire adding of elements:
-		current = snapshot_tail;
-		
+		current = entry_head;
 		// create link
-		current->next = n;
-		n->next = NULL;
-		n->prev = current;
+		current->prev = n;
+		n->prev = NULL;
+		n->next = current;
 		// for rapid fire adding of elements:
-		snapshot_tail = n;
+		entry_head = n;
 	}	
+}
+
+/*
+ *	Description: 	Removes provided entry from linked list (entry_head).
+ *					 NOTE: This method is unsafe.
+ *	Return:			none.
+ */
+void entry_remove(entry* n){
+	if(n->prev == NULL && n->next == NULL){
+		// only element in list
+		entry_head = NULL;
+		// free memory of values, then the struct
+		free(n->values);
+		free(n);
+	}else if(n->prev == NULL && n->next != NULL){
+		// we are dealing with the first element:
+		entry_head = n->next;
+		n->next->prev = NULL;
+		// free memory of values, then the struct
+		free(n->values);
+		free(n);
+	}else if(n->next == NULL && n->prev != NULL){
+		// we are dealing with the last element:
+		entry_tail = n->prev;
+		n->prev->next = NULL;
+		// free memory of values, then the struct
+		free(n->values);
+		free(n);
+	}else{
+		// rebuild link, with n removed.
+		n->next->prev = n->prev;
+		n->prev->next = n->next;
+		// free memory of values, then the struct
+		free(n->values);
+		free(n);
+	}
+}
+
+/*
+ *	Description: 	Removes all entries from linked list (entry_head).
+ *					 NOTE: This method is unsafe because it calls entry_remove()
+ *	Return:			none.
+ */
+void entry_removeAll(entry* head){
+	entry* current = head;
+	entry* next = NULL;
+	if(head == NULL){
+		// nothing to clean up :)
+	}else{
+		// free all memory from each individual entry:
+		while(current != NULL){
+			next = current->next;
+			entry_remove(current);
+			current = next;
+		}
+	}
+}
+
+/*
+ *	Description: 	free() all entries in provied linked-list from memory (SAFE).
+ *	Return: 		none.
+ */
+void entry_freeList(entry* n){
+	entry* current = n;
+	while(current != NULL){
+		current = entry_free(current);
+	}
 }
 
 /*
@@ -1309,7 +1216,6 @@ void snapshot_push(snapshot* n){
 		snapshot_head = n;
 	}	
 }
-
 
 /*
  *	Description: 	Removes provided snapshot from linked-list (UNSAFE).
@@ -1366,7 +1272,17 @@ void snapshot_removeAll(snapshot* head){
 	}
 }
 
-// source: http://www.tutorialspoint.com/c_standard_library/c_function_qsort.htm
-int sortcmp(const void * a, const void * b){
-	return ( *(int*)a - *(int*)b );
+/*
+ *	Description: 	Searches provided linked list for a snapshot.
+ *	Return:			Pointer to located snapshot or NULL (not located).
+ */
+snapshot* snapshot_find(snapshot* head, int id){
+	// search the list until the end:
+	snapshot* current = head;
+	if(head == NULL) return NULL;
+	while(current->next != NULL && current->id != id ){
+		current = current->next;
+	}
+	if(current->id == id) return current;
+	else return NULL;
 }
