@@ -21,7 +21,7 @@
 #define COMMAND_ID_NUM 1
 #define COMMAND_VALUES_INITAL 2
 
-#define DEBUG 0
+#define DEBUG 1
 
 entry* entry_head = NULL;
 entry* entry_tail = NULL;
@@ -952,12 +952,12 @@ array* difference(array* first, array* second){
 	int index = 0;
 	
 	for(int j = 0; j < first->length; j++){
-		term = first->values[j];
+		term = second->values[j];
 		
 		for(int i = 0; i < second->length; i++){
-			if(second->values[i] != term){
+			if(first->values[i] != term){
 				// is in both...
-				list[index] = term;
+				list[index] = first->values[i];
 				index++;
 				list = (int *)realloc(list, (index+1)*sizeof(int));
 				break;
