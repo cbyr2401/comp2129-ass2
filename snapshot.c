@@ -37,7 +37,8 @@ void clean_argv();
 int sortcmp(const void * a, const void * b);
 int uniq(int* values, int length);
 array* intersection(array* first, array* second);
-
+array* difference(array* first, array* second);
+	
 entry* entry_create();
 void entry_update(entry* node);
 void entry_append(entry* node);
@@ -597,8 +598,94 @@ void command_sort(){
 };
 
 void command_diff(){
-	// union minus intersection
+	// 1) symmetric difference: union minus intersection
+	// 2) Postgres: binary left groups
+	// 3) set difference (correct): binary right groupings
+	int * list1 = malloc(1*sizeof(int));
+	int * list2 = malloc(1*sizeof(int));
+	entry* first_set;
+	entry* second_set;
+	array* arr1 = malloc(sizeof(array));
+	array* arr2 = malloc(sizeof(array));
+	array* rtn;
+		
+	// loop over all argv[]
+	int position = 0;
+	while(argv[COMMAND_KEY_NUM+position+1] != NULL){
+		if(position == 0){
+			first_set = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
+		}
+		
+		second_set = entry_find(entry_head, argv[COMMAND_KEY_NUM+position+1]);
+		
+		if(first_set == NULL || second_set == NULL){
+			printf("no such key\n");
+			return;
+		}else{
+			// load up arrays
+			
+			if(position == 0){
+				// initial run, there is not list...so load up from entry
+				list1 = realloc(list1, first_set->length*sizeof(int));
+				memcpy(list1, first_set->values, first_set->length*sizeof(int));
+				arr1->values = list1;
+				arr1->length = first_set->length;
+				// to skip over one (since we don't need to compare the second again...)
+				//position++;
+				// sort and uniq
+				qsort(arr1->values, arr1->length, sizeof(int), sortcmp);
+				arr1->length = uniq(arr1->values, arr1->length);
+				arr1->values = realloc(arr1->values, arr1->length*sizeof(int));
+			}else{
+				// continue using previous list...	
+				
+			}
+			free(list2);
+			list2 = malloc(second_set->length*sizeof(int));
+			
+			memcpy(list2, second_set->values, second_set->length*sizeof(int));
+			arr2->values = list2;
+			arr2->length = second_set->length;
+			
+			// sort and uniq
+			qsort(arr2->values, arr2->length, sizeof(int), sortcmp);
+			arr2->length = uniq(arr2->values, arr2->length);
+			arr2->values = realloc(arr2->values, arr2->length*sizeof(int));
+			
+			// send to function
+			rtn = difference(arr1, arr2);
+			
+			// set arr1 to rtn
+			memcpy(arr1->values, rtn->values, rtn->length*sizeof(int));
+			arr1->length = rtn->length;
+			
+			// free return
+			free(rtn->values);
+			free(rtn);
+			
+			
+			// increment position
+			position++;
+		}
+	}
+
+	printf("[");
+	// ... in the accepted format
+	for(int i = 0; i < arr1->length; i++){
+		if(i == arr1->length-1){
+			printf("%d", arr1->values[i]);
+		}else{
+			printf("%d ", arr1->values[i]);
+		}
+	}
+	printf("]\n");
 	
+	
+	// free structs (no longer needed)
+	free(arr1->values);
+	free(arr2->values);
+	free(arr1);
+	free(arr2);
 };
 
 void command_inter(){
@@ -641,8 +728,10 @@ void command_inter(){
 				// continue using previous list...	
 				
 			}
+			
+			free(list2);
+			list2 = (int *)malloc((second_set->length)*sizeof(int));	
 
-			list2 = realloc(list2, second_set->length*sizeof(int));
 			memcpy(list2, second_set->values, second_set->length*sizeof(int));
 			arr2->values = list2;
 			arr2->length = second_set->length;
@@ -837,6 +926,36 @@ array* intersection(array* first, array* second){
 		
 		for(int i = 0; i < second->length; i++){
 			if(second->values[i] == term){
+				// is in both...
+				list[index] = term;
+				index++;
+				list = (int *)realloc(list, (index+1)*sizeof(int));
+				break;
+			}
+		}
+	}
+	// clean data
+	qsort(list, index, sizeof(int), sortcmp);
+	index = uniq(list,index);
+	list = realloc(list, index*sizeof(int));
+	//for(int i = 0; i < index; i++) printf("line 860: %d", list[i]);
+	object->values = list;
+	object->length = index;
+	return object;
+}
+
+array* difference(array* first, array* second){
+	// returns common elements.
+	array* object = malloc(sizeof(array));
+	int * list = malloc(1*sizeof(int));
+	int term;
+	int index = 0;
+	
+	for(int j = 0; j < first->length; j++){
+		term = first->values[j];
+		
+		for(int i = 0; i < second->length; i++){
+			if(second->values[i] != term){
 				// is in both...
 				list[index] = term;
 				index++;
