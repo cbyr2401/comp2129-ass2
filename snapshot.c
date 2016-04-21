@@ -12,7 +12,7 @@
 
 #include "snapshot.h"
 
-#define DEBUG 0
+#define DEBUG 1
 
 entry* entry_head = NULL;
 entry* entry_tail = NULL;
@@ -172,12 +172,13 @@ void command_purge(){
 			n = entry_find(current_snapshot->entries, argv[COMMAND_KEY_NUM]);
 			first_entry = current_snapshot->entries;
 			
-			// if element is first in list, re-add link:
-			if(strcmp(n->key, first_entry->key)==0) current_snapshot->entries = n->next;
-			
-			// remove element (if exists)
-			if(n != NULL) entry_free(n);
-			
+			if(n != NULL){
+				// if element is first in list, re-add link:
+				if(strcmp(n->key, first_entry->key)==0) current_snapshot->entries = n->next;
+				
+				// remove element (if exists)
+				if(n != NULL) entry_free(n);			
+			}
 			// move to next snapshot...
 			current_snapshot = current_snapshot->next;
 		}
