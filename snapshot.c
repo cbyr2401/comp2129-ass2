@@ -304,7 +304,7 @@ void command_pluck(){
 			printf("%d\n", n->values[index-1]);
 			
 			// shift all values left by one slot.
-			for(int i = index; i < n->length-1; i++) n->values[i] = n->values[i+1];
+			for(int i = index-1; i < n->length-1; i++) n->values[i] = n->values[i+1];
 			
 			// resize array
 			n->values = realloc(n->values, (n->length-1)*sizeof(int));
