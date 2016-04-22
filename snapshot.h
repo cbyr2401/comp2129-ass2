@@ -90,6 +90,7 @@ void clean_argv();
 void display_set(const int* list, const int length);
 int sortcmp(const void* a, const void* b);
 int uniq(int* list, int length);
+array* unions(const array* first, const array* second);
 array* intersection(const array* first, const array* second);
 array* difference(const array* first, const array* second);
 array* create_arraySet(const int* list, const int length);

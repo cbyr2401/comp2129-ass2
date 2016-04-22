@@ -550,6 +550,8 @@ void command_diff(){
 	array* set1;
 	array* set2;
 	array* rtn;
+	array* unoin;
+	array* inter;
 	
 	if(argv[COMMAND_KEY_NUM] == NULL || argv[COMMAND_KEY_NUM+1] == NULL){
 		printf("no such key\n");
@@ -585,11 +587,18 @@ void command_diff(){
 			
 			set2 = create_arraySet(entry2->values, entry2->length);			
 			// send to function
-			rtn = difference(set1, set2);
+			unoin = unions(set1, set2);
+			inter = intersection(set1,set2);
+			
+			rtn = difference(unoin, inter);
 			
 			// free set2
 			free(set2->values);
+			free(unoin->values);
+			free(inter->values);
 			free(set2);
+			free(unoin);
+			free(inter);
 			
 			// put all values into set1 for next cycle
 			memcpy(set1->values, rtn->values, rtn->size*sizeof(int));
@@ -812,6 +821,38 @@ int sortcmp(const void * a, const void * b){
  }
 
 /*
+ *	Description:	Helper method for union.
+ *	Return:			Pointer to Array type with list and length of list
+ */
+array* unions(const array* first, const array* second){
+	array* object;
+	int * list = malloc((first->size)+(second->size)*sizeof(int));
+	memcpy(list, first->values, first->size*sizeof(int));
+	int index = 0;
+	
+	// add items to list:
+	for(int j = 0; j < first->size; j++){
+		list[j] = first->values[j];
+		index++;
+	}
+	for(int j=0; j < second->size; j++){
+		list[index] = second->values[j];
+		index++;
+	}
+	
+	// sort entries
+	qsort(list, index, sizeof(int), sortcmp);
+	index = uniq(list, index);
+	list = realloc(list, index*sizeof(int));
+	
+	// create array
+	object = create_arraySet(list, index);
+	free(list);
+	return object;
+}
+ 
+ 
+/*
  *	Description:	Helper method for intersection.
  *	Return:			Pointer to Array type with list and length of list
  */
@@ -904,14 +945,10 @@ entry* entry_create(void){
 	// building list for entry:	
 	int* list = (int *)malloc(1 * sizeof(int));
 	
-	if(argv[COMMAND_VALUES_INITAL] == NULL){
-		// empty list
-	}else{
-		// multiple items:
-		for(; argv[COMMAND_VALUES_INITAL+length] != NULL; length++){
-			list = realloc(list, (length+1)*sizeof(int));
-			list[length] = atoi(argv[COMMAND_VALUES_INITAL+length]);
-		}
+	// multiple items:
+	for(; argv[COMMAND_VALUES_INITAL+length] != NULL; length++){
+		list = realloc(list, (length+1)*sizeof(int));
+		list[length] = atoi(argv[COMMAND_VALUES_INITAL+length]);
 	}
 	
 	// check key length:
