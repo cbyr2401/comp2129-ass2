@@ -119,36 +119,19 @@ void command_get(){
 	// search for entry with given <key>
 	entry* n = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
 	
-	if(n == NULL){
-		printf("no such key\n");
-	}else{
-		// display list in accepted format:
-		// > GET a
-		// a [1 2 3 4]
-		printf("[");
-		for(int i = 0; i < n->length; i++){
-			if(i == (n->length-1) ){
-				printf("%d", n->values[i]);
-			} else{
-				printf("%d ", n->values[i]);
-			}
-		}
-		printf("]\n");
-	}
+	if(n != NULL) display_set(n->values, n->length);
+	else printf("no such key\n");
 };
 
 void command_del(){
 	// search for entry with given <key>
 	entry* n = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
 	
-	if(n == NULL){
-		printf("no such key\n");
-	}else{
+	if(n != NULL){
 		// destroy entry:
 		entry_remove(n);
-		
 		printf("ok\n");
-	}
+	}else printf("no such key\n");
 };
 
 void command_purge(){
@@ -207,9 +190,7 @@ void command_push(){
 	// search for entry with given <key>
 	entry* n = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
 	
-	if(n == NULL){
-		printf("no such key\n");
-	}else{
+	if(n != NULL){
 		/* Each time there is a new value to PUSH:
 		 * 1) resize array
 		 * 2) shift all elements right by 1
@@ -232,16 +213,14 @@ void command_push(){
 		n->length = length;
 		
 		printf("ok\n");
-	}
+	}else printf("no such key\n");
 };
 
 void command_append(){
 	// search for entry with given <key>
 	entry* n = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
 	
-	if(n == NULL){
-		printf("no such key\n");
-	}else{
+	if(n != NULL){
 		/* Each time there is a new value to APPEND:
 		 * 1) resize array
 		 * 2) add new item to end of array
@@ -259,16 +238,14 @@ void command_append(){
 		n->length = length;
 		
 		printf("ok\n");
-	}
+	}else printf("no such key\n");
 };
 
 void command_pick(){
 	// search for entry with given <key>
 	entry* n = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
 	
-	if(n == NULL){
-		printf("no such key\n");
-	}else{
+	if(n != NULL){
 		// check there is a command
 		if(argv[COMMAND_VALUES_INITAL] == NULL){
 			printf("index out of range\n");
@@ -285,16 +262,14 @@ void command_pick(){
 			// output value at index
 			printf("%d\n", n->values[index-1]);
 		}	
-	}
+	}else printf("no such key\n");
 };
 
 void command_pluck(){
 	// search for entry with given <key>
 	entry* n = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
 
-	if(n == NULL){
-		printf("no such key\n");
-	}else{
+	if(n != NULL){
 		// check there is a command
 		if(argv[COMMAND_VALUES_INITAL] == NULL){
 			printf("index out of range\n");
@@ -325,16 +300,14 @@ void command_pluck(){
 			// update length
 			n->length = n->length-1;
 		}	
-	}
+	}else printf("no such key\n");
 };
 
 void command_pop(){
 	// search for entry with given <key>
 	entry* n = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
 	
-	if(n == NULL){
-		printf("no such key\n");
-	}else{
+	if(n != NULL){
 		if(n->length == 0){
 			printf("nil\n");
 		}else{
@@ -355,7 +328,7 @@ void command_pop(){
 			// update length
 			n->length = n->length-1;
 		}
-	}
+	}else printf("no such key\n");
 };
 
 void command_drop(){
@@ -368,13 +341,11 @@ void command_drop(){
 	// search for snapshot with given <id>
 	snapshot* n = snapshot_find(snapshot_head, atoi(argv[COMMAND_ID_NUM]));
 	
-	if(n == NULL){
-		printf("no such snapshot\n");
-	}else{
+	if(n != NULL){
 		// remove snapshot from snapshot_head
 		snapshot_remove(n);
 		printf("ok\n");
-	}
+	}else printf("no such snapshot\n");
 };
 
 void command_rollback(){
@@ -387,9 +358,7 @@ void command_rollback(){
 	// search for snapshot with given <id>
 	snapshot* n = snapshot_find(snapshot_head, atoi(argv[COMMAND_ID_NUM]));
 	
-	if(n == NULL){
-		printf("no such snapshot\n");
-	}else{
+	if(n != NULL){
 		// remove all entries to avoid memory leaks
 		entry_freeList(entry_head);
 		
@@ -410,7 +379,7 @@ void command_rollback(){
 		
 		// output
 		printf("ok\n");
-	}
+	}else printf("no such snapshot\n");
 };
 
 void command_checkout(){
@@ -423,9 +392,7 @@ void command_checkout(){
 	// search for snapshot with given <id>
 	snapshot* n = snapshot_find(snapshot_head, atoi(argv[COMMAND_ID_NUM]));
 	
-	if(n == NULL){
-		printf("no such snapshot\n");
-	}else{
+	if(n != NULL){
 		// remove all entries to avoid memory leaks
 		entry_freeList(entry_head);
 		
@@ -434,7 +401,7 @@ void command_checkout(){
 		
 		// output
 		printf("ok\n");
-	}
+	}else printf("no such snapshot\n");
 };
 
 void command_snapshot(){
@@ -461,9 +428,7 @@ void command_min(){
 	// search for entry with given <key>
 	entry* n = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
 	
-	if(n == NULL){
-		printf("no such key\n");
-	}else{
+	if(n != NULL){
 		// no elements in the list, print nil
 		if(n->length == 0){
 			printf("nil\n");
@@ -480,16 +445,14 @@ void command_min(){
 			// output min value
 			printf("%d\n", min_value);
 		}
-	}
+	}else printf("no such key\n");
 };
 
 void command_max(){
 	// search for entry with given <key>
 	entry* n = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
 	
-	if(n == NULL){
-		printf("no such key\n");
-	}else{
+	if(n != NULL){
 		// no elements in the list, print nil
 		if(n->length == 0){
 			printf("nil\n");
@@ -506,16 +469,14 @@ void command_max(){
 			// output max value
 			printf("%d\n", max_value);
 		}
-	}
+	}else printf("no such key\n");
 };
 
 void command_sum(){
 	// search for entry with given <key>
 	entry* n = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
 	
-	if(n == NULL){
-		printf("no such key\n");
-	}else{
+	if(n != NULL){
 		// default 0
 		int sum = 0;
 		
@@ -526,28 +487,23 @@ void command_sum(){
 		
 		// output sum
 		printf("%d\n", sum);
-	}
+	}else printf("no such key\n");
 };
 
 void command_len(){
 	// search for entry with given <key>
 	entry* n = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
 	
-	if(n == NULL){
-		printf("no such key\n");
-	}else{
-		// output length (stored in struct)
-		printf("%zu\n", n->length);
-	}
+	// output length (stored in struct)
+	if(n != NULL) printf("%zu\n", n->length);
+	else printf("no such key\n");
 };
 
 void command_rev(){
 	// search for entry with given <key>
 	entry* n = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
 	
-	if(n == NULL){
-		printf("no such key\n");
-	}else{
+	if(n != NULL){
 		int temp;
 		// swap entries... front -> back, back->front
 		for(int i = 0; i < (n->length/2); i++){
@@ -557,37 +513,32 @@ void command_rev(){
 		}
 		// output
 		printf("ok\n");
-	}
+	}else printf("no such key\n");
 };
 
 void command_uniq(){
 	// search for entry with given <key>
 	entry* n = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
 	
-	if(n == NULL){
-		printf("no such key\n");
-	}else{
-		
+	if(n != NULL){		
 		n->length = uniq(n->values, n->length);
 		n->values = realloc(n->values, n->length*sizeof(int));
 				
 		// output
 		printf("ok\n");
-	}
+	}else printf("no such key\n");
 };
 
 void command_sort(){
 	// search for entry with given <key>
 	entry* n = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
 	
-	if(n == NULL){
-		printf("no such key\n");
-	}else{
+	if(n != NULL){
 		// use qsort (fast) to sort elements in-place.
 		qsort(n->values, n->length, sizeof(int), sortcmp);
 		// output
 		printf("ok\n");
-	}
+	}else printf("no such key\n");
 };
 
 void command_diff(){
@@ -764,10 +715,7 @@ void command_union(){
 };
 
 void command_listKeys(){
-	if(entry_head == NULL){
-		// the list is empty
-		printf("no keys\n");
-	}else{
+	if(entry_head != NULL){
 		// loop through all entries in the database (entry_head)
 		entry* current = entry_head;
 		
@@ -776,40 +724,26 @@ void command_listKeys(){
 			printf("%s\n", current->key);
 			current = current->next;
 		}
-	}
+	}else printf("no keys\n"); // the list is empty
 };
 
 void command_listEntries(){
-	if(entry_head==NULL){
-		// the list is empty
-		printf("no entries\n");
-	}else{
+	if(entry_head!=NULL){
 		// loop through all entries in the database (entry_head)
 		entry* current = entry_head;
 		while(current != NULL){
 			// output the <key>
-			printf("%s [", current->key);
+			printf("%s ", current->key);
+			display_set(current->values, current->length);
 			
-			// ...then the entries in the accepted format
-			for(int i = 0; i < current->length; i++){
-				if(i==(current->length)-1){
-					printf("%d", current->values[i]);
-				}else{
-					printf("%d ", current->values[i]);
-				}
-			}
-			printf("]\n");
 			// move to next entry
 			current = current->next;
 		}
-	}
+	}else printf("no entries\n"); // the list is empty
 };
 
 void command_listSnapshots(){
-	if(snapshot_head==NULL){
-		// the snapshots list is empty
-		printf("no snapshots\n");
-	}else{
+	if(snapshot_head!=NULL){
 		// loop through all snapshots (snapshot_head)
 		snapshot* current = snapshot_head;
 		while(current != NULL){
@@ -818,7 +752,7 @@ void command_listSnapshots(){
 			// move to next snapshot
 			current = current->next;
 		}
-	}
+	}else printf("no snapshots\n"); // the snapshots list is empty
 };
 
 /*
@@ -976,19 +910,12 @@ entry* entry_create(void){
 	
 	if(argv[COMMAND_VALUES_INITAL] == NULL){
 		// empty list
-	}else if(argv[COMMAND_VALUES_INITAL+1] == NULL){
-		// one item in list
-		list[0] = atoi(argv[COMMAND_VALUES_INITAL]);
-		length = 1;
 	}else{
 		// multiple items:
-		length = 0;
-
 		for(; argv[COMMAND_VALUES_INITAL+length] != NULL; length++){
 			list = realloc(list, (length+1)*sizeof(int));
 			list[length] = atoi(argv[COMMAND_VALUES_INITAL+length]);
 		}
-
 	}
 	
 	// check key length:
@@ -998,7 +925,7 @@ entry* entry_create(void){
 	}
 
 	// load up the entry with values:
-	strcpy(n->key, argv[1]);
+	strcpy(n->key, argv[COMMAND_KEY_NUM]);
 	n->values = list;
 	n->length = length;
 	
@@ -1014,6 +941,7 @@ entry* entry_find(entry* head, char* key){
 	// search the list until the end:
 	entry* current = head;
 	if(head == NULL || key == NULL) return NULL;
+
 	while(current->next != NULL && strcmp(current->key, key) != 0 ){
 		current = current->next;
 	}
