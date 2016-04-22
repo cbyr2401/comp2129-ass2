@@ -266,12 +266,18 @@ void command_pick(){
 	// search for entry with given <key>
 	entry* n = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
 	
-	// get index from command line
-	int index = atoi(argv[2]);
-	
 	if(n == NULL){
 		printf("no such key\n");
 	}else{
+		// check there is a command
+		if(argv[COMMAND_VALUES_INITAL] == NULL){
+			printf("index out of range\n");
+			return;
+		}
+		
+		// get index from command line
+		int index = atoi(argv[COMMAND_VALUES_INITAL]);
+		
 		// check if index in range
 		if(index < 1 || index > n->length){
 			printf("index out of range\n");
@@ -285,13 +291,19 @@ void command_pick(){
 void command_pluck(){
 	// search for entry with given <key>
 	entry* n = entry_find(entry_head, argv[COMMAND_KEY_NUM]);
-	
-	// get index from command line
-	int index = atoi(argv[2]);
-	
+
 	if(n == NULL){
 		printf("no such key\n");
 	}else{
+		// check there is a command
+		if(argv[COMMAND_VALUES_INITAL] == NULL){
+			printf("index out of range\n");
+			return;
+		}
+		
+		// get index from command line
+		int index = atoi(argv[COMMAND_VALUES_INITAL]);
+		
 		// check if index in range
 		if(index < 1 || index > n->length){
 			printf("index out of range\n");
@@ -347,6 +359,12 @@ void command_pop(){
 };
 
 void command_drop(){
+	// check there is a command
+	if(argv[COMMAND_ID_NUM] == NULL){
+		printf("no such snapshot\n");
+		return;
+	}
+	
 	// search for snapshot with given <id>
 	snapshot* n = snapshot_find(snapshot_head, atoi(argv[COMMAND_ID_NUM]));
 	
@@ -360,6 +378,12 @@ void command_drop(){
 };
 
 void command_rollback(){
+	// check there is a command
+	if(argv[COMMAND_ID_NUM] == NULL){
+		printf("no such snapshot\n");
+		return;
+	}
+	
 	// search for snapshot with given <id>
 	snapshot* n = snapshot_find(snapshot_head, atoi(argv[COMMAND_ID_NUM]));
 	
@@ -390,6 +414,12 @@ void command_rollback(){
 };
 
 void command_checkout(){
+	// check there is a command
+	if(argv[COMMAND_ID_NUM] == NULL){
+		printf("no such snapshot\n");
+		return;
+	}
+	
 	// search for snapshot with given <id>
 	snapshot* n = snapshot_find(snapshot_head, atoi(argv[COMMAND_ID_NUM]));
 	
@@ -486,20 +516,16 @@ void command_sum(){
 	if(n == NULL){
 		printf("no such key\n");
 	}else{
-		// no elements in the list, print nil
-		if(n->length == 0){
-			printf("nil\n");
-		}else{
-			int sum = 0;
-			
-			// add up all elements in the list
-			for(int i = 0; i < n->length; i++){
-				sum += n->values[i];
-			}
-			
-			// output sum
-			printf("%d\n", sum);
+		// default 0
+		int sum = 0;
+		
+		// add up all elements in the list
+		for(int i = 0; i < n->length; i++){
+			sum += n->values[i];
 		}
+		
+		// output sum
+		printf("%d\n", sum);
 	}
 };
 
