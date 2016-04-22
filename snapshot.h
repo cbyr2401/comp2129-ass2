@@ -103,7 +103,6 @@ entry* entry_listCopy(entry* head);
 void entry_update(entry* node);
 void entry_push(entry* node);
 void entry_remove(entry* node);
-void entry_removeAll(entry* head);
 void entry_freeList(entry* head);
 
 // Functions for C.R.U.D for Snapshots

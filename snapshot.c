@@ -956,12 +956,8 @@ entry* entry_free(entry* n){
 	// store next:
 	entry* next = n->next;
 	
-	// rebuild links:
-	if(n->next == NULL && n->prev == NULL){
-		// only element
-	}
 	// first element
-	else if(n->prev == NULL && n->next != NULL) n->next->prev = NULL;
+	if(n->prev == NULL && n->next != NULL) n->next->prev = NULL;
 	else if(n->prev != NULL && n->next != NULL){
 		// middle element
 		n->prev->next = n->next;
@@ -970,7 +966,6 @@ entry* entry_free(entry* n){
 	// last element
 	else if(n->prev != NULL && n->next == NULL) n->prev->next = NULL;
 
-	
 	// free memory of values, then the struct
 	free(n->values);
 	free(n);
