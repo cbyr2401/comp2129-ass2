@@ -769,18 +769,14 @@ void clean_argv(void){
 }
 
 /*
- *	Description: 	Lists all values in given array
+ *	Description: 	Lists all values in given array in the accepted format
  *	Return:			none.
  */
 void display_set(const int * list, const int length){
 	printf("[");
-	// ... in the accepted format
 	for(int i = 0; i < length; i++){
-		if(i == length-1){
-			printf("%d", list[i]);
-		}else{
-			printf("%d ", list[i]);
-		}
+		if(i == length-1) printf("%d", list[i]);
+		else printf("%d ", list[i]);
 	}
 	printf("]\n");
 }
@@ -928,6 +924,8 @@ entry* entry_create(void){
 	strcpy(n->key, argv[COMMAND_KEY_NUM]);
 	n->values = list;
 	n->length = length;
+	n->next = NULL;
+	n->prev = NULL;
 	
 	// this function is finished...
 	return n;
@@ -999,6 +997,8 @@ entry* entry_copy(entry* master){
 	strcpy(copy->key, master->key);
 	copy->values = list;
 	copy->length = length;
+	copy->next = NULL;
+	copy->prev = NULL;
 	
 	// this function is finished...
 	return copy;
@@ -1023,8 +1023,6 @@ entry* entry_listCopy(entry* head){
 				// first element in list.
 				new_head = copy;
 				new_tail = copy;
-				copy->next = NULL;
-				copy->prev = NULL;
 			}else{
 				// create link
 				new_tail->next = copy;
@@ -1090,57 +1088,28 @@ void entry_push(entry* n){
  */
 void entry_remove(entry* n){
 	if(n->prev == NULL && n->next == NULL){
-		// only element in list
+		// only element
 		entry_head = NULL;
-		// free memory of values, then the struct
-		free(n->values);
-		free(n);
 	}else if(n->prev == NULL && n->next != NULL){
-		// we are dealing with the first element:
+		// first element:
 		entry_head = n->next;
 		n->next->prev = NULL;
-		// free memory of values, then the struct
-		free(n->values);
-		free(n);
 	}else if(n->next == NULL && n->prev != NULL){
-		// we are dealing with the last element:
+		//last element:
 		entry_tail = n->prev;
 		n->prev->next = NULL;
-		// free memory of values, then the struct
-		free(n->values);
-		free(n);
 	}else{
-		// rebuild link, with n removed.
+		// middle element rebuild link, with n removed.
 		n->next->prev = n->prev;
 		n->prev->next = n->next;
-		// free memory of values, then the struct
-		free(n->values);
-		free(n);
 	}
+	// free memory of values, then the struct
+	free(n->values);
+	free(n);
 }
 
 /*
- *	Description: 	Removes all entries from linked list (entry_head).
- *					 NOTE: This method is unsafe because it calls entry_remove()
- *	Return:			none.
- */
-void entry_removeAll(entry* head){
-	entry* current = head;
-	entry* next = NULL;
-	if(head == NULL){
-		// nothing to clean up :)
-	}else{
-		// free all memory from each individual entry:
-		while(current != NULL){
-			next = current->next;
-			entry_remove(current);
-			current = next;
-		}
-	}
-}
-
-/*
- *	Description: 	free() all entries in provied linked-list from memory (SAFE).
+ *	Description: 	free() all entries in provided linked-list from memory (SAFE).
  *	Return: 		none.
  */
 void entry_freeList(entry* n){
