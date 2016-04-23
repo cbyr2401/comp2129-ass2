@@ -601,6 +601,7 @@ void command_diff(){
 			free(inter);
 			
 			// put all values into set1 for next cycle
+			set1->values = realloc(set1->values, rtn->size*sizeof(int));
 			memcpy(set1->values, rtn->values, rtn->size*sizeof(int));
 			set1->size = rtn->size;
 			
@@ -826,8 +827,7 @@ int sortcmp(const void * a, const void * b){
  */
 array* unions(const array* first, const array* second){
 	array* object;
-	int * list = malloc((first->size)+(second->size)*sizeof(int));
-	memcpy(list, first->values, first->size*sizeof(int));
+	int * list = malloc(((first->size)+(second->size))*sizeof(int));
 	int index = 0;
 	
 	// add items to list:
